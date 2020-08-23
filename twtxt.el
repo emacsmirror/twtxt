@@ -2,7 +2,8 @@
 
 ;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
 ;; Version: 0.1
-;; Package-Requires: ((request "0.2.0"))
+;; URL: https://github.com/deadblackclover/twtxt-el
+;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
 ;; Keywords: news
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER. This file is
