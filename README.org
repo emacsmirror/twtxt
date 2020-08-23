@@ -1,0 +1,41 @@
+#+TITLE: twtxt-el
+
+A twtxt client for Emacs
+
+* Install
+
+** Melpa
+
+~twtxt-el~ is available from
+Melpa. After [[https://melpa.org/#/getting-started][setting up]] Melpa
+as a repository and update the local package list, you can install
+~twtxt-el~ and its dependencies using ~M-x package-install twtxt-el~.
+
+** Manually
+
+Add twtxt-el to your ~load-path~ and require. Something like:
+
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "path/to/twtxt-el/")
+  (require 'twtxt)
+#+END_SRC
+
+* Setup
+
+#+BEGIN_SRC emacs-lisp
+  (setq twtxt-file "~/my/twtxt") ;; Path to twtxt file. Default "~/twtxt"
+
+  ;; List following
+  (setq twtxt-following (list (list "alice" "https://example.org/alice.txt")
+                              (list "bob" "http://bobsplace.xyz/twtxt"))
+#+END_SRC
+
+* Usage
+
+View your timeline
+
+~M-x twtxt-timeline~
+
+Post a status update
+
+~M-x twtxt-post~
