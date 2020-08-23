@@ -1,18 +1,37 @@
-;;; twtxt.el - client twtxt
-;;; Copyright (c) 2020, DEADBLACKCLOVER. This file is
-;;; licensed under the GNU General Public License version 3 or later. See
-;;; the LICENSE file.
-;;;
-;;; twtxt is a decentralised, minimalist microblogging service for hackers.
+;;; twtxt.el --- Client twtxt
 
+;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
+;; Version: 0.1
+;; Package-Requires: ((request "0.2.0"))
+;; Keywords: news
+
+;; Copyright (c) 2020, DEADBLACKCLOVER. This file is
+;; licensed under the GNU General Public License version 3 or later. See
+;; the LICENSE file.
+
+;;; Commentary:
+
+;; twtxt is a decentralised, minimalist microblogging service for hackers.
+
+;;; Code:
 (require 'cl-lib)
 (require 'request)
 
-(defvar twtxt-file "~/twtxt")
-(defvar twtxt-following nil)
+(defgroup twtxt nil 
+  "Client twtxt" 
+  :group 'twtxt)
 
-(defvar twtxt-timeline-list nil)
-(defvar twtxt-username "")
+(defvar twtxt-file "~/twtxt" 
+  "Path to twtxt file")
+
+(defvar twtxt-following nil 
+  "Following list")
+
+(defvar twtxt-timeline-list nil 
+  "Timeline list")
+
+(defvar twtxt-username "" 
+  "Temporary storage of username")
 
 (defun twtxt-get-datetime () 
   "Getting date and time according to RFC 3339 standard"
@@ -81,3 +100,4 @@
   (append-to-file (concat (twtxt-get-datetime) "\t" post "\n") nil twtxt-file))
 
 (provide 'twtxt)
+;;; twtxt.el ends here
