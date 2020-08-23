@@ -4,7 +4,6 @@
 ;; Version: 0.1
 ;; URL: https://github.com/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
-;; Keywords: news
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER. This file is
 ;; licensed under the GNU General Public License version 3 or later. See
