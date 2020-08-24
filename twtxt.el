@@ -21,11 +21,15 @@
   "Client twtxt"
   :group 'twtxt)
 
-(defvar twtxt-file "~/twtxt"
-  "Pafth to twtxt file.")
+(defcustom twtxt-file "~/twtxt"
+  "Path to twtxt file."
+  :type 'file
+  :group 'twtxt)
 
-(defvar twtxt-following nil
-  "Following list.")
+(defcustom twtxt-following nil
+  "Following list."
+  :type '(repeat (list (string :tag "Name") (string :tag "URL")))
+  :group 'twtxt)
 
 (defvar twtxt-timeline-list nil
   "Timeline list.")
