@@ -28,7 +28,8 @@
 
 (defcustom twtxt-following nil
   "Following list."
-  :type '(repeat (list (string :tag "Name") (string :tag "URL")))
+  :type '(repeat (list (string :tag "Name")
+		       (string :tag "URL")))
   :group 'twtxt)
 
 (defvar twtxt-timeline-list nil
@@ -78,18 +79,18 @@
 
 (defun twtxt-fetch-list ()
   "Getting a list of texts."
-  (mapcar (lambda (item)
-	    (setq twtxt-username (concat "[[" (car (cdr item)) "][" (car item) "]]"))
-	    (twtxt-fetch (car (cdr item)))) twtxt-following))
+  (mapc (lambda (item)
+	  (setq twtxt-username (concat "[[" (car (cdr item)) "][" (car item) "]]"))
+	  (twtxt-fetch (car (cdr item)))) twtxt-following))
 
 (defun twtxt-timeline-buffer (data)
   "Create buffer and DATA recording."
   (switch-to-buffer (get-buffer-create "*twtxt-timeline*"))
-  (mapcar (lambda (item)
-	    (insert (twtxt-replace-tab item))
-	    (insert "\n\n")) data)
+  (mapc (lambda (item)
+	  (insert (twtxt-replace-tab item))
+	  (insert "\n\n")) data)
   (org-mode)
-  (beginning-of-buffer))
+  (goto-char (point-min)))
 
 (defun twtxt-timeline ()
   "View your timeline."
