@@ -1,5 +1,8 @@
 #+TITLE: twtxt-el
 
+[[https://melpa.org/packages/twtxt-badge.svg]]
+[[https://img.shields.io/badge/GNU%20Emacs-25.1-b48ead.svg]]
+
 A twtxt client for Emacs
 
 * Install
