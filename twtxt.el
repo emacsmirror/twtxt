@@ -1,5 +1,7 @@
 ;;; twtxt.el --- A twtxt client for Emacs
 
+;; SPDX-License-Identifier: GPL-3.0
+
 ;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
 ;; Version: 0.1
 ;; URL: https://github.com/deadblackclover/twtxt-el
