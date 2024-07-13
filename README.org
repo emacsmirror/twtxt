@@ -1,6 +1,6 @@
-#+TITLE: twtxt-el
+#+TITLE: twtxt
 
-[[https://melpa.org/packages/twtxt-badge.svg]]
+[[https://melpa.org/#/twtxt][file:https://melpa.org/packages/twtxt-badge.svg]]
 [[https://img.shields.io/badge/GNU%20Emacs-25.1-b48ead.svg]]
 
 A twtxt client for Emacs
@@ -9,17 +9,17 @@ A twtxt client for Emacs
 
 ** Melpa
 
-~twtxt-el~ is available from
+~twtxt~ is available from
 Melpa. After [[https://melpa.org/#/getting-started][setting up]] Melpa
 as a repository and update the local package list, you can install
-~twtxt-el~ and its dependencies using ~M-x package-install twtxt-el~.
+~twtxt~ and its dependencies using ~M-x package-install twtxt~.
 
 ** Manually
 
-Add twtxt-el to your ~load-path~ and require. Something like:
+Add twtxt to your ~load-path~ and require. Something like:
 
 #+BEGIN_SRC emacs-lisp
-  (add-to-list 'load-path "path/to/twtxt-el/")
+  (add-to-list 'load-path "path/to/twtxt/")
   (require 'twtxt)
 #+END_SRC
 
