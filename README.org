@@ -1,6 +1,6 @@
 #+TITLE: twtxt
 
-[[https://melpa.org/#/twtxt][file:https://melpa.org/packages/twtxt-badge.svg]]
+[[https://melpa.org/#/twtxt][https://melpa.org/packages/twtxt-badge.svg]]
 [[https://img.shields.io/badge/GNU%20Emacs-25.1-b48ead.svg]]
 
 A twtxt client for Emacs
