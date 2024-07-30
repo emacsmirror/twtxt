@@ -4,7 +4,7 @@
 
 ;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
 ;; Version: 0.1
-;; URL: https://github.com/deadblackclover/twtxt-el
+;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
