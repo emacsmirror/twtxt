@@ -68,6 +68,9 @@
 (defvar twtxt-username ""
   "Temporary storage of username.")
 
+(defvar twtxt-post-tweet-hook nil
+  "Hooks run after posting a tweet.")
+
 (defun twtxt-get-datetime ()
   "Getting date and time according to RFC 3339 standard."
   (concat (format-time-string "%Y-%m-%dT%T")
@@ -132,7 +135,8 @@
 (defun twtxt-post (post)
   "POST a status update."
   (interactive "sPost:")
-  (append-to-file (concat (twtxt-get-datetime) "\t" post "\n") nil twtxt-file))
+  (append-to-file (concat (twtxt-get-datetime) "\t" post "\n") nil twtxt-file)
+  (run-hooks 'twtxt-post-tweet-hook))
 
 (provide 'twtxt)
 ;;; twtxt.el ends here
