@@ -33,6 +33,19 @@ Add twtxt to your ~load-path~ and require. Something like:
                               (list "bob" "http://bobsplace.xyz/twtxt"))
 #+END_SRC
 
+** Optional: Using the Post-Tweet Hook
+
+You can use the `twtxt-post-tweet-hook` to perform additional actions automatically after posting a tweet. For example, you can upload your twtxt file to a server or execute other commands. Configure it as follows:
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'twtxt-post-tweet-hook
+            (lambda ()
+              (shell-command
+               (concat "scp " twtxt-file " user@server:/path/public_html/twtxt.txt"))))
+#+END_SRC
+
+This example uploads your twtxt file to a remote server using `scp` after every tweet you post.
+
 * Usage
 
 View your timeline
