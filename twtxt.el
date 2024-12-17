@@ -95,6 +95,9 @@
   (mapcar (lambda (item)
 	    (concat twtxt-username "\t" item))
 	  (twtxt-parse-text text)))
+(defun twtxt-replace-newlines (str)
+  "Replace newline characters in STR with the Unicode character \\u2028. Source: https://twtxt.dev/exts/multiline.html"
+  (replace-regexp-in-string "\n" (char-to-string #x2028) str))
 
 (defun twtxt-push-text (text)
   "Concatenate the resulting TEXT with the current list."
@@ -120,8 +123,8 @@
   "Create buffer and DATA recording."
   (switch-to-buffer (get-buffer-create "*twtxt-timeline*"))
   (mapc (lambda (item)
-	  (insert (twtxt-replace-tab item))
-	  (insert "\n\n")) data)
+          (insert (twtxt-replace-newlines (twtxt-replace-tab item))) ;; Aquí se aplica el reemplazo
+          (insert "\n\n")) data)
   (org-mode)
   (goto-char (point-min)))
 
@@ -132,10 +135,51 @@
   (twtxt-timeline-buffer (twtxt-sort-post twtxt-timeline-list))
   (setq twtxt-timeline-list nil))
 
-(defun twtxt-post (post)
+
+(defun twtxt-post-buffer ()
+  "Open a temporary buffer for writing and posting a new status update."
+  (let ((buffer-name "*Twtxt New Post*"))
+    (switch-to-buffer (get-buffer-create buffer-name))
+    (erase-buffer)
+    (insert "Write your post below. When done, type C-c C-c to post or C-c C-k to cancel.\n\n")
+    (use-local-map (let ((map (make-sparse-keymap)))
+                     (set-keymap-parent map text-mode-map)
+                     (define-key map (kbd "C-c C-c") 'twtxt-post--confirm)
+                     (define-key map (kbd "C-c C-k") 'twtxt-post--cancel)
+                     map))
+    (goto-char (point-max))
+    (message "Write your post and press C-c C-c to send or C-c C-k to cancel.")))
+
+(defun twtxt-post--confirm ()
+  "Post the content of the buffer as a new status update."
+  (interactive)
+  (let ((post (buffer-substring-no-properties
+               (save-excursion
+                 (goto-char (point-min))
+                 (forward-paragraph)
+                 (forward-line 1)
+                 (point))
+               (point-max))))
+    (when (and post (not (string-blank-p post)))
+      (append-to-file
+       (concat (twtxt-get-datetime) "\t" (twtxt-replace-newlines post) "\n")
+       nil
+       twtxt-file)
+      (message "Posted: %s" post)
+      (run-hooks 'twtxt-post-tweet-hook))
+    (kill-buffer)))
+
+(defun twtxt-post--cancel ()
+  "Cancel and close the new post buffer without posting."
+  (interactive)
+  (when (yes-or-no-p "Are you sure you want to cancel this post?")
+    (kill-buffer)
+    (message "Post canceled.")))
+;; \u2028
+(defun twtxt-post ()
   "POST a status update."
-  (interactive "sPost:")
-  (append-to-file (concat (twtxt-get-datetime) "\t" post "\n") nil twtxt-file)
+  (interactive)
+  (twtxt-post-buffer)
   (run-hooks 'twtxt-post-tweet-hook))
 
 (provide 'twtxt)
