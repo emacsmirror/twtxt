@@ -193,7 +193,7 @@
   (when (yes-or-no-p "Are you sure you want to cancel this post?")
     (kill-buffer)
     (message "Post canceled.")))
-;; \u2028
+
 (defun twtxt-post ()
   "POST a status update."
   (interactive)
