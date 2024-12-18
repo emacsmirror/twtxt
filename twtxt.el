@@ -148,12 +148,12 @@
 	  (insert "\n\n")
           (insert (twtxt-replace-tab item))
           (insert "\n\n")) data)
+  (org-mode)
   (use-local-map (let ((map (make-sparse-keymap)))
                    (set-keymap-parent map text-mode-map)
 		   (define-key map (kbd "p") 'twtxt-timeline--previous)
-                   (define-key map (kbd "n ") 'twtxt-timeline--next)
+                   (define-key map (kbd "n") 'twtxt-timeline--next)
 		   map))
-  (org-mode)
   (goto-char (point-min)))
 
 
