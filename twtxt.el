@@ -105,20 +105,22 @@
   "Concatenate the resulting TEXT with the current list."
   (setq twtxt-timeline-list (append twtxt-timeline-list (twtxt-append-username text))))
 
-(defun twtxt-fetch-list ()
-  "Getting a list of texts."
-  (mapc (lambda (item)
-          (cl-destructuring-bind (name url) item
-            (setq twtxt-username (concat "[[" url "][" name "]]"))
-            (twtxt-fetch url)))
-        twtxt-following))
-
+(defun twtxt-fetch (url)
+  "Getting text by URL."
+  (progn (request url
+	   :parser 'buffer-string
+	   :success (cl-function (lambda
+				   (&key
+				    data
+				    &allow-other-keys)
+				   (twtxt-push-text data))))))
 
 (defun twtxt-fetch-list ()
   "Getting a list of texts."
   (mapc (lambda (item)
 	  (setq twtxt-username (concat "[[" (car (cdr item)) "][" (car item) "]]"))
 	  (twtxt-fetch (car (cdr item)))) twtxt-following))
+
 
 (defun twtxt-timeline-buffer (data)
   "Create buffer and DATA recording."
