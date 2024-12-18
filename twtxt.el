@@ -121,6 +121,7 @@
 	  (setq twtxt-username (concat "[[" (car (cdr item)) "][" (car item) "]]"))
 	  (twtxt-fetch (car (cdr item)))) twtxt-following))
 
+
 (defun twtxt-timeline-buffer (data)
   "Create buffer and DATA recording."
   (switch-to-buffer (get-buffer-create "*twtxt-timeline*"))
@@ -192,12 +193,11 @@
   (when (yes-or-no-p "Are you sure you want to cancel this post?")
     (kill-buffer)
     (message "Post canceled.")))
-;; \u2028
+
 (defun twtxt-post ()
   "POST a status update."
   (interactive)
-  (twtxt-post-buffer)
-  (run-hooks 'twtxt-post-tweet-hook))
+  (twtxt-post-buffer))
 
 (provide 'twtxt)
 ;;; twtxt.el ends here

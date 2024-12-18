@@ -26,16 +26,16 @@ Add twtxt to your ~load-path~ and require. Something like:
 * Setup
 
 #+BEGIN_SRC emacs-lisp
-  (setq twtxt-file "~/my/twtxt") ;; Path to twtxt file. Default "~/twtxt"
+    (setq twtxt-file "~/my/twtxt") ;; Path to twtxt file. Default "~/twtxt"
 
-  ;; List following
-  (setq twtxt-following (list (list "alice" "https://example.org/alice.txt")
-                              (list "bob" "http://bobsplace.xyz/twtxt"))
+    ;; List following
+    (setq twtxt-following '(("alice" "https://example.org/alice.txt")
+  			     ("bob" "http://bobsplace.xyz/twtxt")))
 #+END_SRC
 
 ** Optional: Using the Post-Tweet Hook
 
-You can use the `twtxt-post-tweet-hook` to perform additional actions automatically after posting a tweet. For example, you can upload your twtxt file to a server or execute other commands. Configure it as follows:
+You can use the ~twtxt-post-tweet-hook~ to perform additional actions automatically after posting a tweet. For example, you can upload your twtxt file to a server or execute other commands. Configure it as follows:
 
 #+BEGIN_SRC emacs-lisp
   (add-hook 'twtxt-post-tweet-hook
@@ -44,7 +44,7 @@ You can use the `twtxt-post-tweet-hook` to perform additional actions automatica
                (concat "scp " twtxt-file " user@server:/path/public_html/twtxt.txt"))))
 #+END_SRC
 
-This example uploads your twtxt file to a remote server using `scp` after every tweet you post.
+This example uploads your twtxt file to a remote server using ~scp~ after every tweet you post.
 
 * Usage
 
