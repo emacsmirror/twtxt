@@ -26,11 +26,11 @@ Add twtxt to your ~load-path~ and require. Something like:
 * Setup
 
 #+BEGIN_SRC emacs-lisp
-  (setq twtxt-file "~/my/twtxt") ;; Path to twtxt file. Default "~/twtxt"
+    (setq twtxt-file "~/my/twtxt") ;; Path to twtxt file. Default "~/twtxt"
 
-  ;; List following
-  (setq twtxt-following (list (list "alice" "https://example.org/alice.txt")
-                              (list "bob" "http://bobsplace.xyz/twtxt"))
+    ;; List following
+    (setq twtxt-following '(("alice" "https://example.org/alice.txt")
+  			     ("bob" "http://bobsplace.xyz/twtxt")))
 #+END_SRC
 
 ** Optional: Using the Post-Tweet Hook
