@@ -38,10 +38,11 @@ Add twtxt to your ~load-path~ and require. Something like:
 You can use the ~twtxt-post-tweet-hook~ to perform additional actions automatically after posting a tweet. For example, you can upload your twtxt file to a server or execute other commands. Configure it as follows:
 
 #+BEGIN_SRC emacs-lisp
-  (add-hook 'twtxt-post-tweet-hook
-            (lambda ()
-              (shell-command
-               (concat "scp " twtxt-file " user@server:/path/public_html/twtxt.txt"))))
+  ;; Example: Upload twtxt file to a remote server using scp: scp twtxt.txt user@server:/your/path/twtxt.txt
+  (add-hook 'twtxt-post-tweet-hook (lambda () (call-process-shell-command (format "scp %s %s"
+  									 twtxt-file
+  									 "user@server:/your/path/twtxt.txt"
+  									 ) nil 0)))
 #+END_SRC
 
 This example uploads your twtxt file to a remote server using ~scp~ after every tweet you post.
