@@ -3,7 +3,8 @@
 ;; SPDX-License-Identifier: GPL-3.0
 
 ;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
-;; Version: 0.1
+;; Colaborator: Andros - https://andros.dev
+;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
 
@@ -74,6 +75,7 @@
 (defun twtxt-get-datetime ()
   "Getting date and time according to RFC 3339 standard."
   (concat (format-time-string "%Y-%m-%dT%T")
+
 	  ((lambda (x)
 	     (concat (substring x 0 3) ":" (substring x 3 5)))
 	   (format-time-string "%z"))))
@@ -128,6 +130,20 @@
   (org-mode)
   (goto-char (point-min)))
 
+
+(defun twtxt-post--mention ()
+  "Insert a mention in the format '@<nick url>' into the post buffer. Source: https://twtxt.dev/exts/twt-subject.html"
+  (interactive)
+  (when (not twtxt-following)
+    (message "No users in the following list."))
+  (let* ((user-options (mapcar (lambda (item)
+                                 (concat (car item) " " (cadr item)))
+                               twtxt-following))
+         (selected-user (completing-read "Mention: " user-options nil t)))
+    (when selected-user
+      (insert "@<" selected-user "> "))))
+
+
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
@@ -141,11 +157,12 @@
   (let ((buffer-name "*Twtxt New Post*"))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
-    (insert "Write your post below. When done, type C-c C-c to post or C-c C-k to cancel.\n\n")
+    (insert "Write your post below. \nC-c C-c to post\nC-c C-m to mention\nC-c C-k to cancel.\n\n")
     (use-local-map (let ((map (make-sparse-keymap)))
                      (set-keymap-parent map text-mode-map)
                      (define-key map (kbd "C-c C-c") 'twtxt-post--confirm)
-                     (define-key map (kbd "C-c C-k") 'twtxt-post--cancel)
+		     (define-key map (kbd "C-c C-m") 'twtxt-post--mention)
+		     (define-key map (kbd "C-c C-k") 'twtxt-post--cancel)
                      map))
     (goto-char (point-max))
     (message "Write your post and press C-c C-c to send or C-c C-k to cancel.")))
