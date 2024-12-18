@@ -197,8 +197,7 @@
 (defun twtxt-post ()
   "POST a status update."
   (interactive)
-  (twtxt-post-buffer)
-  (run-hooks 'twtxt-post-tweet-hook))
+  (twtxt-post-buffer))
 
 (provide 'twtxt)
 ;;; twtxt.el ends here
