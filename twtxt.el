@@ -109,6 +109,8 @@
   "Getting text by URL."
   (progn (request url
 	   :parser 'buffer-string
+	   :sync t
+	   :timeout 10
 	   :success (cl-function (lambda
 				   (&key
 				    data
