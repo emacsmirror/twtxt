@@ -63,6 +63,9 @@
 		       (string :tag "URL")))
   :group 'twtxt)
 
+(defvar twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+  "Line for separating posts.")
+
 (defvar twtxt-timeline-list nil
   "Timeline list.")
 
@@ -123,14 +126,34 @@
 	  (setq twtxt-username (concat "[[" (car (cdr item)) "][" (car item) "]]"))
 	  (twtxt-fetch (car (cdr item)))) twtxt-following))
 
+(defun twtxt-timeline--previous ()
+  "Move to the previous post."
+  (interactive)
+  ;; Search for the previous twtxt-line
+  (search-backward (concat twtxt-line "\n\n")))
+
+(defun twtxt-timeline--next ()
+  "Move to the next post."
+  (interactive)
+  ;; Search for the next twtxt-line
+  (search-forward (concat twtxt-line "\n\n")))
+
 
 (defun twtxt-timeline-buffer (data)
   "Create buffer and DATA recording."
   (switch-to-buffer (get-buffer-create "*twtxt-timeline*"))
   (mapc (lambda (item)
-          (insert (twtxt-replace-newlines (twtxt-replace-tab item))) ;; Aquí se aplica el reemplazo
+	  ;; Line
+	  (insert twtxt-line)
+	  (insert "\n\n")
+          (insert (twtxt-replace-tab item))
           (insert "\n\n")) data)
   (org-mode)
+  (use-local-map (let ((map (make-sparse-keymap)))
+                   (set-keymap-parent map text-mode-map)
+		   (define-key map (kbd "p") 'twtxt-timeline--previous)
+                   (define-key map (kbd "n") 'twtxt-timeline--next)
+		   map))
   (goto-char (point-min)))
 
 
