@@ -92,8 +92,36 @@
   (replace-regexp-in-string "\t" "\n" str))
 
 (defun twtxt-sort-post (list)
-  "Sorting posts in LIST."
-  (sort list #'string>))
+  "Sort the list of posts by date."
+  ;; Check if the line is a valid post
+  (let ((valid-posts
+         (cl-remove-if-not
+          (lambda (line)
+            (string-match-p "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}" line))
+          list)))
+    ;; Sort the valid posts by date
+    (sort valid-posts
+          (lambda (a b)
+            (time-less-p
+             (date-to-time (car (split-string b "\t")))
+             (date-to-time (car (split-string a "\t"))))))))
+
+(defun twtxt-sort-post (list)
+  "Sort the list of posts by date."
+  ;; Filter out invalid posts
+  (let ((valid-posts
+         (cl-remove-if-not
+          (lambda (line)
+            (string-match-p "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}" line)) ;; RFC 3339
+          list)))
+    ;; Sort the valid posts by date
+    (sort valid-posts
+          (lambda (a b)
+            (let* ((date-a (car (split-string a "\t"))) ;; Extract the date from first post
+                   (date-b (car (split-string b "\t")))) ;; Extract the date from second post
+              (time-less-p ;; Compare the dates
+               (date-to-time date-b) ;; b is greater than a
+               (date-to-time date-a)))))))
 
 (defun twtxt-append-username (text)
   "Append username in TEXT."
@@ -173,8 +201,9 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
-  (twtxt-fetch-list)
-  (twtxt-timeline-buffer (twtxt-sort-post twtxt-timeline-list))
+  (twtxt-fetch-list) ;; Get the list of texts.
+  (let ((sorted-list (twtxt-sort-post twtxt-timeline-list)))
+    (twtxt-timeline-buffer sorted-list)) ;; Display the list of texts.
   (setq twtxt-timeline-list nil))
 
 
