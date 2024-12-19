@@ -183,7 +183,7 @@
   "View your timeline."
   (interactive)
   (twtxt-fetch-list) ;; Get the list of texts.
-  (let ((sorted-list (twtxt-sort-post twtxt-timeline-list)))
+  (let ((sorted-list (twtxt-sort-posts twtxt-timeline-list)))
     (twtxt-timeline-buffer sorted-list)) ;; Display the list of texts.
   (setq twtxt-timeline-list nil))
 
