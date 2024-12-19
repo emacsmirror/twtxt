@@ -91,37 +91,18 @@
   "Replacing tabs with line breaks in STR."
   (replace-regexp-in-string "\t" "\n" str))
 
-(defun twtxt-sort-post (list)
-  "Sort the list of posts by date."
-  ;; Check if the line is a valid post
-  (let ((valid-posts
-         (cl-remove-if-not
-          (lambda (line)
-            (string-match-p "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}" line))
-          list)))
-    ;; Sort the valid posts by date
+(defun twtxt-sort-posts (posts)
+  "Sort the LIST of twtxt POSTS by RFC 3339 date, newest first."
+  (let* ((rfc3339-regex "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\(?:Z\\|[+-][0-9]\\{2\\}:[0-9]\\{2\\}\\)")
+         (is-valid-post (lambda (line)
+                          (string-match-p rfc3339-regex (car (split-string line "\t")))))
+         (extract-date (lambda (line)
+                         (date-to-time (car (split-string line "\t")))))
+         (valid-posts (cl-remove-if-not is-valid-post posts)))
+    ;; Sort valid posts, comparing extracted dates
     (sort valid-posts
           (lambda (a b)
-            (time-less-p
-             (date-to-time (car (split-string b "\t")))
-             (date-to-time (car (split-string a "\t"))))))))
-
-(defun twtxt-sort-post (list)
-  "Sort the list of posts by date."
-  ;; Filter out invalid posts
-  (let ((valid-posts
-         (cl-remove-if-not
-          (lambda (line)
-            (string-match-p "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}" line)) ;; RFC 3339
-          list)))
-    ;; Sort the valid posts by date
-    (sort valid-posts
-          (lambda (a b)
-            (let* ((date-a (car (split-string a "\t"))) ;; Extract the date from first post
-                   (date-b (car (split-string b "\t")))) ;; Extract the date from second post
-              (time-less-p ;; Compare the dates
-               (date-to-time date-b) ;; b is greater than a
-               (date-to-time date-a)))))))
+            (time-less-p (funcall extract-date b) (funcall extract-date a))))))
 
 (defun twtxt-append-username (text)
   "Append username in TEXT."
