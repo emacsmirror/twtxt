@@ -33,6 +33,18 @@ Add twtxt to your ~load-path~ and require. Something like:
   			     ("bob" "http://bobsplace.xyz/twtxt")))
 #+END_SRC
 
+If you don't have a twtxt file yet, you can create one using this template:
+
+#+BEGIN_SRC text
+# Learn more about twtxt:
+#     https://twtxt.readthedocs.io/en/stable/
+#
+# nick = Foo
+# url = https://example.org/twtxt.txt
+# avatar = https://example.org/avatar.jpg
+# description = I'm a hacker
+#+END_SRC
+
 ** Optional: Using the Post-Tweet Hook
 
 You can use the ~twtxt-post-tweet-hook~ to perform additional actions automatically after posting a tweet. For example, you can upload your twtxt file to a server or execute other commands. Configure it as follows:
@@ -53,6 +65,17 @@ View your timeline
 
 ~M-x twtxt-timeline~
 
+| Key | Action |
+|------|--------|
+| ~n~ | Next post |
+| ~p~ | Previous post |
+
 Post a status update
 
 ~M-x twtxt-post~
+
+| Key | Action |
+|------|--------|
+| ~C-c C-c~ | Post tweet |
+| ~C-c C-m~ | Add mention |
+| ~C-c C-k~ | Cancel tweet |
