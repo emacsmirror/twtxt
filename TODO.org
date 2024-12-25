@@ -1,6 +1,6 @@
 * Core
 
-** TODO Asynchronous system to get all feeds
+** IN PROGRESS Asynchronous system to get all feeds
 
 * Timeline
 
