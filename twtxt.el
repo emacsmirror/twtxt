@@ -66,6 +66,10 @@
 (defvar twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
   "Line for separating posts.")
 
+(defvar rfc3339-regex
+  "\\`\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\([.][0-9]+\\)?\\(Z\\|[+-][0-9]\\{2\\}:[0-9]\\{2\\}\\)?\\)"
+  "Regular expression to match RFC 3339 timestamps.")
+
 (defvar twtxt-timeline-list nil
   "Timeline list.")
 
@@ -92,17 +96,21 @@
   (replace-regexp-in-string "\t" "\n" str))
 
 (defun twtxt-sort-posts (posts)
-  "Sort the LIST of twtxt POSTS by RFC 3339 date, newest first."
-  (let* ((rfc3339-regex "^[0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\(?:Z\\|[+-][0-9]\\{2\\}:[0-9]\\{2\\}\\)")
-         (is-valid-post (lambda (line)
-                          (string-match-p rfc3339-regex (car (split-string line "\t")))))
-         (extract-date (lambda (line)
-                         (date-to-time (car (split-string line "\t")))))
-         (valid-posts (cl-remove-if-not is-valid-post posts)))
-    ;; Sort valid posts, comparing extracted dates
-    (sort valid-posts
-          (lambda (a b)
-            (time-less-p (funcall extract-date b) (funcall extract-date a))))))
+  "Sort the list of twtxt POSTS by RFC 3339 date, newest first."
+  (let ((is-valid-post (lambda (line)
+                         (string-match-p rfc3339-regex
+                                         (car (split-string line "\t")))))
+        (extract-date (lambda (line)
+                        (date-to-time (car (split-string line "\t"))))))
+    (let ((valid-posts (cl-remove-if-not is-valid-post posts)))
+      (if valid-posts
+          (sort valid-posts
+                (lambda (a b)
+                  (time-less-p (funcall extract-date b)
+                               (funcall extract-date a))))
+        (progn
+          (message "No valid posts found in the provided list.")
+          nil)))))
 
 (defun twtxt-append-username (text)
   "Append username in TEXT."
@@ -182,9 +190,14 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
-  (twtxt-fetch-list) ;; Get the list of texts.
+  ;; Fetch texts
+  (twtxt-fetch-list)
+  ;; Sort posts
   (let ((sorted-list (twtxt-sort-posts twtxt-timeline-list)))
-    (twtxt-timeline-buffer sorted-list)) ;; Display the list of texts.
+    (if sorted-list
+        (twtxt-timeline-buffer sorted-list)
+      (message "No valid posts found in your timeline.")))
+  ;; Reset temporal data
   (setq twtxt-timeline-list nil))
 
 
@@ -193,7 +206,14 @@
   (let ((buffer-name "*Twtxt New Post*"))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
-    (insert "Write your post below. \nC-c C-c to post\nC-c C-m to mention\nC-c C-k to cancel.\n\n")
+    (insert "Write your post below:\n\n")
+    (insert (propertize "C-c C-c" 'face 'bold))
+    (insert " to post\n")
+    (insert (propertize "C-c C-m" 'face 'bold))
+    (insert " to mention\n")
+    (insert (propertize "C-c C-k" 'face 'bold))
+    (insert " to cancel.\n\n")
+
     (use-local-map (let ((map (make-sparse-keymap)))
                      (set-keymap-parent map text-mode-map)
                      (define-key map (kbd "C-c C-c") 'twtxt-post--confirm)
