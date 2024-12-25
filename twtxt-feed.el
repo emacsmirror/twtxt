@@ -1,4 +1,4 @@
-;;; twtxt.el --- A twtxt client for Emacs
+;;; twtxt-feed.el --- A twtxt client for Emacs
 ;; twtxt-following
 ;; (mapcar 'get-tweets-from-feed twtxt-feeds)
 
@@ -15,16 +15,21 @@
 
 (defun twtxt--get-profile-from-feed (url)
   "Get the profile of the user at URL."
-  (request url
-    :sync t
-    :timeout 10
-    :success (cl-function
-              (lambda (&key data &allow-other-keys)
-		data))
-    :error (cl-function
-	    (lambda (&key error-thrown &allow-other-keys)
-	      (message "Error getting profile from feed: %S" error-thrown)
-	      nil))))
+  (let ((profile nil))
+    (request url
+      :sync t
+      :timeout 5
+      :success (cl-function
+		(lambda (&key data &allow-other-keys)
+		  (setq profile '((nick . "juan")
+		     (urls . ("http://example.com/twtxt.txt"))
+		     (avatar . "http://example.com/avatar.png")
+		     (description . "A description of the user.")))))
+      :error (cl-function
+	      (lambda (&key error-thrown &allow-other-keys)
+		(message "Error getting profile from feed: %S" error-thrown)
+		nil))) profile))
+
 
 (defun twtxt--get-tweets-from-feed (url))
 
@@ -39,3 +44,5 @@
    (lambda (result)
      (message "Done getting tweets from all feeds")
      )))
+
+(provide 'twtxt-feed)

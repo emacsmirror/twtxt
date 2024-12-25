@@ -1,3 +1,5 @@
+;;; twtxt-feed-test.el
+
 (add-to-list 'load-path "twtxt-feed.el")
 (require 'ert)
 
@@ -8,10 +10,9 @@
 	 (urls-test '("https://twtxt.andros.dev" "https://activity.andros.dev" "https://andros.dev" "gemini://andros.dev"))
 	 (avatar-test "https://andros.dev/img/avatar.jpg")
 	 (profile (twtxt--get-profile-from-feed url-feed)))
-    (message profile)
-    (should (string= nick-test (profile 'nick)))
-    (should (equal urls-test (profile 'urls)))
-    (should (string= avatar-test (profile 'avatar)))
-    (should (not (string-empty-p (profile 'description))))))
+    (should (string= nick-test (alist-get 'nick profile)))
+    (should (equal urls-test (alist-get 'urls profile)))
+    (should (string= avatar-test (alist-get 'avatar profile)))
+    (should (not (string-empty-p (alist-get 'description profile))))))
 
 (provide 'twtxt-feed-test)
