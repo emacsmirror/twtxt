@@ -63,7 +63,10 @@
 		       (string :tag "URL")))
   :group 'twtxt)
 
-(defvar twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+;; Multiline Extension: https://twtxt.dev/exts/multiline.html
+(defconst twtxt--char-newline (char-to-string #x2028))
+
+(defconst twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
   "Line for separating posts.")
 
 (defvar rfc3339-regex
