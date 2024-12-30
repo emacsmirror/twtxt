@@ -31,5 +31,14 @@
   (should (string= "https://foo.com/avatar.jpg" (twtxt--get-a-single-value twtxt-feed-example "avatar")))
   (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening" (twtxt--get-a-single-value twtxt-feed-example "description"))))
 
+(ert-deftest test-twtxt--get-feed ()
+  (let* ((url "https://twtxt.andros.dev/")
+	 (feed (twtxt--get-feed url)))
+    (should (string= "andros" (twtxt--get-a-single-value feed "nick")))))
+
+;; (ert-deftest test-twtxt--get-profile-from-feed ()
+;;   (let ((profile (twtxt--get-profile-from-feed twtxt-feed-example)))
+;;     (should (string= (twtxt--get-a-single-value profile "nick") (profile 'nick)))
+;;     ))
 
 (provide 'twtxt-feed-test)
