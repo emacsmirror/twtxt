@@ -9,7 +9,8 @@
 (defvar twtxt--feeds '((nick . "Foo")
 		       (urls . ("http://example.com/twtxt.txt"))
 		       (avatar . "http://example.com/avatar.png")
-		       (tweets . (((date . "2018-01-01T00:00:00Z")
+
+		       g(tweets . (((date . "2018-01-01T00:00:00Z")
 				   (text . "Hello, world!"))))))
 
 (defun twtxt--get-a-single-value (feed key)
@@ -46,10 +47,10 @@ Return:
 
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
-  '((nick . (twtxt--get-a-single-value feed "nick"))
-    (urls . (twtxt--get-a-single-value feed "urls"))
-    (avatar . (twtxt--get-a-single-value feed "avatar"))
-    (description . (twtxt--get-a-single-value feed "description"))))
+  (list (cons 'nick (twtxt--get-a-single-value feed "nick"))
+	  (cons 'urls (twtxt--get-a-single-value feed "urls"))
+	  (cons 'avatar (twtxt--get-a-single-value feed "avatar"))
+	  (cons 'description (twtxt--get-a-single-value feed "description"))))
 
 
 (defun twtxt--get-tweets-from-feed (feed)
@@ -65,20 +66,20 @@ Return:
     tweets))
 
 
-(defun twtxt--get-tweets-from-all-feeds ()
-  "Get the tweets from all feeds. Return: A list with the tweets from all feeds."
-  (async-start
-   (lambda ()
-     (message "Getting tweets from all feeds")
-     (setq twtxt--feeds nil) ;; Clear the feeds
-     (dolist (user twtxt-following)
-       (let* ((feed (twtxt--get-feed (cdr (assoc 'urls user))))
-	      (profile (twtxt--get-profile-from-feed feed))
-	      (tweets (twtxt--get-tweets-from-feed feed))
-	      (user '('profile . profile 'tweets . tweets)))
-	 (setq twtxt--feeds (cons user twtxt--feeds))
-	 (run-hooks 'twtxt-after-fetch-posts-hook))))
-   (lambda (result)
-     (message "Done getting tweets from all feeds"))))
+;; (defun twtxt--get-tweets-from-all-feeds ()
+;;   "Get the tweets from all feeds. Return: A list with the tweets from all feeds."
+;;   (async-start
+;;    (lambda ()
+;;      (message "Getting tweets from all feeds")
+;;      (setq twtxt--feeds nil) ;; Clear the feeds
+;;      (dolist (user twtxt-following)
+;;        (let* ((feed (twtxt--get-feed (cdr (assoc 'urls user))))
+;; 	      (profile (twtxt--get-profile-from-feed feed))
+;; 	      (tweets (twtxt--get-tweets-from-feed feed))
+;; 	      (user '('profile . profile 'tweets . tweets)))
+;; 	 (setq twtxt--feeds (cons user twtxt--feeds))
+;; 	 (run-hooks 'twtxt-after-fetch-posts-hook))))
+;;    (lambda (result)
+;;      (message "Done getting tweets from all feeds"))))
 
 (provide 'twtxt-feed)

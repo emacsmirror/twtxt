@@ -36,9 +36,16 @@
 	 (feed (twtxt--get-feed url)))
     (should (string= "andros" (twtxt--get-a-single-value feed "nick")))))
 
-;; (ert-deftest test-twtxt--get-profile-from-feed ()
-;;   (let ((profile (twtxt--get-profile-from-feed twtxt-feed-example)))
-;;     (should (string= (twtxt--get-a-single-value profile "nick") (profile 'nick)))
-;;     ))
+(ert-deftest test-twtxt--get-profile-from-feed ()
+  (let ((profile (twtxt--get-profile-from-feed twtxt-feed-example)))
+    (should (string= "foo" (cdr (assoc 'nick profile))))
+    (let ((urls (cdr (assoc 'urls profile))))
+      (should (string= "https://foo.com" (car urls)))
+      (should (string= "http://bar.com" (cadr urls)))
+      (should (string= "gemini://baz.com" (caddr urls))))
+    (should (string= "https://foo.com/avatar.jpg" (cdr (assoc 'avatar profile))))
+    (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening"
+                     (cdr (assoc 'description profile))))))
+
 
 (provide 'twtxt-feed-test)
