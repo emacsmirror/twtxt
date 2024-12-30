@@ -13,10 +13,22 @@
 				   (text . "Hello, world!"))))))
 
 (defun twtxt--get-a-single-value (feed key)
-  "Get a single value from a twtxt feed. Parameters: FEED (text), KEY. Return: The value of KEY in FEED."
-  (let ((regex (format "#\\s-*%s\\s-*=?\\s-*\\([a-zA-Z0-9_-]+\\)" (regexp-quote key))))
-    (if (string-match regex feed)
-        (match-string 1 feed)
+  "Get a single value or multiple values from a twtxt feed based on a KEY.
+Parameters:
+  FEED (text) - Twtxt feed content.
+  KEY (string) - The key to search for.
+Return:
+  A single value (string) or a list (if multiple values are found)."
+  (let* ((regex (format "#\\s-*%s\\s-*=?\\s-*\\(.+\\)" (regexp-quote key)))
+         (pos 0)
+         values)
+    (while (string-match regex feed pos)
+      (push (string-trim (match-string 1 feed)) values)
+      (setq pos (match-end 0)))
+    (if values
+        (if (= (length values) 1)
+            (car values) ;; Return a single value if there is only one
+          (reverse values)) ;; Return a list if there are multiple values
       nil)))
 
 (defun twtxt--get-feed (url)
@@ -64,9 +76,9 @@
 	      (profile (twtxt--get-profile-from-feed feed))
 	      (tweets (twtxt--get-tweets-from-feed feed))
 	      (user '('profile . profile 'tweets . tweets)))
-	 (setq twtxt--feeds (cons user twtxt--feeds)))))
+	 (setq twtxt--feeds (cons user twtxt--feeds))
+	 (run-hooks 'twtxt-after-fetch-posts-hook))))
    (lambda (result)
-     (message "Done getting tweets from all feeds")
-     )))
+     (message "Done getting tweets from all feeds"))))
 
 (provide 'twtxt-feed)

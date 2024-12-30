@@ -46,7 +46,6 @@
 
 ;;; Code:
 (require 'cl-lib)
-(require 'request)
 
 (defgroup twtxt nil
   "A twtxt client for Emacs."
@@ -64,14 +63,10 @@
   :group 'twtxt)
 
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
-(defconst twtxt--char-newline (char-to-string #x2028))
+(defconst twtxt--char-newline (char-to-string #x2028) :type 'string :group 'twtxt)
 
-(defconst twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500"
+(defconst twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500" :type 'string :group 'twtxt
   "Line for separating posts.")
-
-(defvar rfc3339-regex
-  "\\`\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\}T[0-9]\\{2\\}:[0-9]\\{2\\}:[0-9]\\{2\\}\\([.][0-9]+\\)?\\(Z\\|[+-][0-9]\\{2\\}:[0-9]\\{2\\}\\)?\\)"
-  "Regular expression to match RFC 3339 timestamps.")
 
 (defvar twtxt-timeline-list nil
   "Timeline list.")
@@ -79,8 +74,11 @@
 (defvar twtxt-username ""
   "Temporary storage of username.")
 
-(defvar twtxt-post-tweet-hook nil
+(defvar twtxt-post-tweet-hook nil :type 'hook :group 'twtxt
   "Hooks run after posting a tweet.")
+
+(defvar twtxt-after-fetch-posts-hook nil :type 'hook :group 'twtxt
+  "Hooks run after fetching posts.")
 
 (defun twtxt-get-datetime ()
   "Getting date and time according to RFC 3339 standard."
@@ -130,15 +128,10 @@
 
 (defun twtxt-fetch (url)
   "Getting text by URL."
-  (progn (request url
-	   :parser 'buffer-string
-	   :sync t
-	   :timeout 10
-	   :success (cl-function (lambda
-				   (&key
-				    data
-				    &allow-other-keys)
-				   (twtxt-push-text data))))))
+  (twtxt--get-tweets-from-all-feeds))
+
+;; Open timeline when fetching posts is done
+(add-hook 'twtxt-after-fetch-posts-hook 'twtxt-timeline)
 
 (defun twtxt-fetch-list ()
   "Getting a list of texts."

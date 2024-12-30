@@ -3,16 +3,33 @@
 (add-to-list 'load-path "twtxt-feed.el")
 (require 'ert)
 
+(defvar twtxt-feed-example "# Learn more about twtxt:
+#     https://twtxt.readthedocs.io/en/stable/
+#
+# nick = foo
+# url = https://foo.com
+# url = http://bar.com
+# url = gemini://baz.com
+# avatar = https://foo.com/avatar.jpg
+# description =  Full-Stack developer Emacs addicted ðŸ± Cat food opening
 
-(ert-deftest test-twtxt--get-profile-from-feed ()
-  (let* ((url-feed "https://twtxt.andros.dev/")
-	 (nick-test "andros")
-	 (urls-test '("https://twtxt.andros.dev" "https://activity.andros.dev" "https://andros.dev" "gemini://andros.dev"))
-	 (avatar-test "https://andros.dev/img/avatar.jpg")
-	 (profile (twtxt--get-profile-from-feed url-feed)))
-    (should (string= nick-test (alist-get 'nick profile)))
-    (should (equal urls-test (alist-get 'urls profile)))
-    (should (string= avatar-test (alist-get 'avatar profile)))
-    (should (not (string-empty-p (alist-get 'description profile))))))
+2024-12-18T14:18:26+01:00	Hi Twtxt
+2024-12-18T14:54:56+01:00	I like it
+2024-12-23T08:33:19+01:00	Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback.
+
+2024-12-23T08:49:02+01:00	(#hsyv65q) Hello everyone! ðŸ˜
+2024-12-23T10:00:59+01:00	Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !
+
+")
+
+(ert-deftest test-twtxt--get-a-single-value ()
+  (should (string= "foo" (twtxt--get-a-single-value twtxt-feed-example "nick")))
+  (let ((urls (twtxt--get-a-single-value twtxt-feed-example "url")))
+    (should (string= "https://foo.com" (car urls)))
+    (should (string= "http://bar.com" (cadr urls)))
+    (should (string= "gemini://baz.com" (caddr urls))))
+  (should (string= "https://foo.com/avatar.jpg" (twtxt--get-a-single-value twtxt-feed-example "avatar")))
+  (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening" (twtxt--get-a-single-value twtxt-feed-example "description"))))
+
 
 (provide 'twtxt-feed-test)
