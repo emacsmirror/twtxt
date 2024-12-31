@@ -6,11 +6,13 @@
 (require 'twtxt)
 
 (defvar twtxt--my-profile nil)
-(defvar twtxt--feeds '((nick . "Foo")
+(defvar twtxt--feeds '((id . 1)
+		       (nick . "Foo")
 		       (urls . ("http://example.com/twtxt.txt"))
 		       (avatar . "http://example.com/avatar.png")
 
-		       g(tweets . (((date . "2018-01-01T00:00:00Z")
+		       g(tweets . (((id . 1)
+				    (date . "2018-01-01T00:00:00Z")
 				   (text . "Hello, world!"))))))
 
 (defun twtxt--get-a-single-value (feed key)
