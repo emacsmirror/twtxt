@@ -47,5 +47,15 @@
     (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening"
                      (cdr (assoc 'description profile))))))
 
+(ert-deftest test-twtxt--get-tweets-from-feed ()
+  (let ((test-posts '("Hi Twtxt"
+		     "I like it"
+		     "Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback."
+		     "(#hsyv65q) Hello everyone! ðŸ˜"
+		     "Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !"))
+	(posts (twtxt--get-tweets-from-feed twtxt-feed-example)))
+    (dotimes (i (length test-posts))
+      (should (string= (nth i test-posts) (nth i posts))))))
+
 
 (provide 'twtxt-feed-test)

@@ -61,9 +61,10 @@ Returns:
 
 (defun twtxt--get-tweets-from-feed (feed)
   "Get the tweets from a feed. Parameters: FEED (text). Return: A list with the tweets from the feed: date and text."
-  (let ((feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
-	(feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed))
-	(list-of-lines (split-string feed-without-empty-lines "\n"))
+  (let* ((feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
+	(feed-with-good-pattern (replace-regexp-in-string "" "" feed-without-comments))
+	(feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-with-good-pattern))
+	(list-of-lines (split-string feed-with-good-pattern "\n"))
 	(tweets nil))
     (dolist (line list-of-lines)
       (let* ((date (parse-time-string (car (split-string line "\t"))))
