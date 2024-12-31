@@ -54,7 +54,7 @@ Returns:
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
   (list (cons 'nick (twtxt--get-a-single-value feed "nick"))
-	  (cons 'urls (twtxt--get-a-single-value feed "urls"))
+	  (cons 'urls (twtxt--get-a-single-value feed "url"))
 	  (cons 'avatar (twtxt--get-a-single-value feed "avatar"))
 	  (cons 'description (twtxt--get-a-single-value feed "description"))))
 
