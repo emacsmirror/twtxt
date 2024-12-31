@@ -7,11 +7,11 @@
 #     https://twtxt.readthedocs.io/en/stable/
 #
 # nick = foo
-# url = https://foo.com
-# url = http://bar.com
-# url = gemini://baz.com
-# avatar = https://foo.com/avatar.jpg
-# description =  Full-Stack developer Emacs addicted ðŸ± Cat food opening
+#url = https://foo.com
+# url =http://bar.com
+#   url= gemini://baz.com
+#avatar=https://foo.com/avatar.jpg
+#      DEScripTION= Full-Stack developer Emacs addicted ðŸ± Cat food opening
 
 2024-12-18T14:18:26+01:00	Hi Twtxt
 2024-12-18T14:54:56+01:00	I like it

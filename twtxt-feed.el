@@ -14,23 +14,26 @@
 				   (text . "Hello, world!"))))))
 
 (defun twtxt--get-a-single-value (feed key)
-  "Get a single value or multiple values from a twtxt feed based on a KEY.
+  "Extract a single or multiple values from a twtxt feed based on a KEY.
 Parameters:
-  FEED (text) - Twtxt feed content.
+  FEED (string) - The complete twtxt feed as a string.
   KEY (string) - The key to search for.
-Return:
-  A single value (string) or a list (if multiple values are found)."
-  (let* ((regex (format "#\\s-*%s\\s-*=?\\s-*\\(.+\\)" (regexp-quote key)))
-         (pos 0)
+Returns:
+  Either a single value (string) if only one match exists,
+  or a list of values (strings) if multiple matches are found.
+  If no match exists, returns nil."
+  (let* ((lines (split-string feed "\n"))
+         (regex (format "^#\\s-*%s\\s-*=?\\s-*\\(.+\\)$" (regexp-quote key))) ;; # key = value
          values)
-    (while (string-match regex feed pos)
-      (push (string-trim (match-string 1 feed)) values)
-      (setq pos (match-end 0)))
+    ;; Loop through each line and find matches
+    (dolist (line lines)
+      (when (string-match regex line)
+        (setq values (car (string-trim (match-string 1 line)))))) ;; Extract and clean matches
     (if values
         (if (= (length values) 1)
-            (car values) ;; Return a single value if there is only one
-          (reverse values)) ;; Return a list if there are multiple values
-      nil)))
+            (car values) ;; Return single value if there's one
+          values) ;; Return a list of values if there are multiple
+      nil))) ;; Return nil if no match found
 
 (defun twtxt--get-feed (url)
   "Get the feed, text, from URL."
