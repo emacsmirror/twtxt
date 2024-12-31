@@ -63,10 +63,9 @@
   :group 'twtxt)
 
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
-(defconst twtxt--char-newline (char-to-string #x2028) :type 'string :group 'twtxt)
+(defconst twtxt--char-newline (char-to-string #x2028))
 
-(defconst twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500" :type 'string :group 'twtxt
-  "Line for separating posts.")
+(defconst twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500")
 
 (defvar twtxt-timeline-list nil
   "Timeline list.")
@@ -74,11 +73,9 @@
 (defvar twtxt-username ""
   "Temporary storage of username.")
 
-(defvar twtxt-post-tweet-hook nil :type 'hook :group 'twtxt
-  "Hooks run after posting a tweet.")
+(defvar twtxt-post-tweet-hook nil)
 
-(defvar twtxt-after-fetch-posts-hook nil :type 'hook :group 'twtxt
-  "Hooks run after fetching posts.")
+(defvar twtxt-after-fetch-posts-hook nil)
 
 (defun twtxt-get-datetime ()
   "Getting date and time according to RFC 3339 standard."
