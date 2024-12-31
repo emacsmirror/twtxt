@@ -30,11 +30,12 @@ Returns:
     ;; Loop through each line and find matches
     (dolist (line lines)
       (when (string-match regex line)
-        (setq values (car (string-trim (match-string 1 line)))))) ;; Extract and clean matches
+	(let ((value (match-string 1 line)))
+	  (setq values (cons value values))))) ;; Extract and clean matches
     (if values
         (if (= (length values) 1)
             (car values) ;; Return single value if there's one
-          values) ;; Return a list of values if there are multiple
+          (reverse values)) ;; Return a list of values if there are multiple
       nil))) ;; Return nil if no match found
 
 (defun twtxt--get-feed (url)
