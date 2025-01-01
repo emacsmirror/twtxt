@@ -48,14 +48,15 @@
                      (cdr (assoc 'description profile))))))
 
 (ert-deftest test-twtxt--get-tweets-from-feed ()
-  (let ((test-posts '("Hi Twtxt"
-		     "I like it"
-		     "Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback."
+  (let ((test-posts '("Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !"
 		     "(#hsyv65q) Hello everyone! ðŸ˜"
-		     "Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !"))
+		     "Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback."
+		     "I like it"
+		      "Hi Twtxt"))
 	(posts (twtxt--get-tweets-from-feed twtxt-feed-example)))
+    (should (equal (length test-posts) (length posts)))
     (dotimes (i (length test-posts))
-      (should (string= (nth i test-posts) (nth i posts))))))
+      (should (string= (cdr (assoc 'text (nth i posts))) (nth i test-posts))))))
 
 
 (provide 'twtxt-feed-test)

@@ -5,15 +5,16 @@
 (require 'async)
 (require 'twtxt)
 
-(defvar twtxt--my-profile nil)
-(defvar twtxt--feeds '((id . 1)
-		       (nick . "Foo")
-		       (urls . ("http://example.com/twtxt.txt"))
-		       (avatar . "http://example.com/avatar.png")
-
-		       g(tweets . (((id . 1)
-				    (date . "2018-01-01T00:00:00Z")
-				   (text . "Hello, world!"))))))
+(defvar twtxt--feeds nil)
+;; Example of structure:
+;; '((id . 1) ;; The id of the user, unique for each user
+;; (nick . "Foo") ;; The nick of the user
+;; (urls . ("http://example.com/twtxt.txt")) ;; urls of the user
+;; (avatar . "http://example.com/avatar.png") ;; The avatar of the user
+;; g(tweets . ;; The tweets of the user
+;;                (((id . 1) ;; The id of the tweet, unique for each post
+;; 		    (date . date) ;; The date of the tweet
+;; 		    (text . "Hello, world!"))))) ;; The text of the tweet
 
 (defun twtxt--get-a-single-value (feed key)
   "Extract a single or multiple values from a twtxt feed based on a KEY.
@@ -62,14 +63,16 @@ Returns:
 (defun twtxt--get-tweets-from-feed (feed)
   "Get the tweets from a feed. Parameters: FEED (text). Return: A list with the tweets from the feed: date and text."
   (let* ((feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
-	(feed-with-good-pattern (replace-regexp-in-string "" "" feed-without-comments))
-	(feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-with-good-pattern))
-	(list-of-lines (split-string feed-with-good-pattern "\n"))
+	(feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-without-comments))
+	(list-of-lines (split-string feed-without-empty-lines "\n"))
 	(tweets nil))
     (dolist (line list-of-lines)
-      (let* ((date (parse-time-string (car (split-string line "\t"))))
-	     (text (replace-string twtxt--char-newline "\n" (cadr (split-string line "\t")))))
-	(setq tweets (cons (list (cons 'date date) (cons 'text text)) tweets))))
+      (let ((columns (split-string line "\t")))
+	(when (length= columns 2)
+	  (let ((date (parse-time-string (car columns)))
+		(text (replace-regexp-in-string twtxt--char-newline "\n" (cadr columns))))
+	    (when (and date text)
+	      (setq tweets (cons (list (cons 'date date) (cons 'text text)) tweets)))))))
     tweets))
 
 
