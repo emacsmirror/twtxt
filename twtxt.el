@@ -127,9 +127,6 @@
   "Getting text by URL."
   (twtxt--get-tweets-from-all-feeds))
 
-;; Open timeline when fetching posts is done
-(add-hook 'twtxt-after-fetch-posts-hook 'twtxt-timeline)
-
 (defun twtxt-fetch-list ()
   "Getting a list of texts."
   (mapc (lambda (item)
