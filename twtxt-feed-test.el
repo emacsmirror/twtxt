@@ -45,11 +45,11 @@
          (text-6 "")
          (link-6 (twtxt--split-link text-6)))
     ;; Tests for text-1
-    (should (string= "My blog" (cdr (assoc 'name link-1)))) ; Extraer solo el valor de 'name
-    (should (string= "http://example.com/blog" (cdr (assoc 'url link-1)))) ; Extraer solo el valor de 'url
+    (should (string= "My blog" (cdr (assoc 'name link-1)))) ; Get only the value of 'name))
+    (should (string= "http://example.com/blog" (cdr (assoc 'url link-1)))) ; Get only the value of 'url
     ;; Tests for text-2
-    (should (string= "Website" (cdr (assoc 'name link-2)))) ; Extraer 'name
-    (should (string= "gemini://example.com/" (cdr (assoc 'url link-2)))) ; Extraer 'url
+    (should (string= "Website" (cdr (assoc 'name link-2)))) ; Get only the value of 'name
+    (should (string= "gemini://example.com/" (cdr (assoc 'url link-2)))) ; Get only the value of 'url
     ;; Tests for invalid inputs
     (should (null link-3)) ; No URL
     (should (null link-4)) ; No name
