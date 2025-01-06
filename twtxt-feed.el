@@ -86,16 +86,14 @@ Returns:
 (defun twtxt--split-link (raw-text)
   "Split RAW-TEXT into a link with a name and a URL.
 Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). If the text doesn't contain a valid URL, return nil. Extension: https://twtxt.dev/exts/metadata.html"
-  (let ((split-text (split-string raw-text " "))
-	;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-        (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
-    (if (and (> (length split-text) 1)
-             (string-match-p url-regex (car (last split-text))))
-        (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
-              (cons 'url (car (last split-text))))
-      nil)))
-
-(message "%s" (twtxt--split-link "My blog example.com"))
+  (when raw-text (let ((split-text (split-string raw-text " "))
+	 ;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+         (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
+     (if (and (> (length split-text) 1)
+              (string-match-p url-regex (car (last split-text))))
+         (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
+               (cons 'url (car (last split-text))))
+       nil))))
 
 (defun twtxt--get-thread-id (text)
   "Get the thread id from TEXT. Hash extension: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' is 'ohmmloa'."
@@ -132,18 +130,17 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
    (cons 'id (gensym))
    (cons 'nick (twtxt--get-a-single-value feed "nick"))
    (cons 'url (twtxt--get-a-single-value feed "url"))
-   (cons 'link (mapcar twtxt--split-link (twtxt--get-a-single-value feed "link")))
+   (cons 'link (mapcar #'twtxt--split-link (twtxt--get-a-single-value feed "link")))
    (cons 'follow (twtxt--get-a-single-value feed "follow"))
    (cons 'avatar (twtxt--get-a-single-value feed "avatar"))
    (cons 'description (twtxt--get-a-single-value feed "description"))))
 
-
 (defun twtxt--get-twts-from-feed (feed)
   "Get the twts from a feed. Parameters: FEED (text). Return: A list with the twts from the feed: date and text."
   (let* ((feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
-	(feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-without-comments))
-	(list-of-lines (split-string feed-without-empty-lines "\n"))
-	(twts nil))
+	 (feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-without-comments))
+	 (list-of-lines (split-string feed-without-empty-lines "\n"))
+	 (twts nil))
     (dolist (line list-of-lines)
       (let ((columns (split-string line "\t")))
 	(when (length= columns 2)

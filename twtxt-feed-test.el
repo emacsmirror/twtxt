@@ -43,7 +43,9 @@
          (text-5 "Website")
          (link-5 (twtxt--split-link text-5))
          (text-6 "")
-         (link-6 (twtxt--split-link text-6)))
+         (link-6 (twtxt--split-link text-6))
+	 (text-7 nil)
+	 (link-7 (twtxt--split-link text-7)))
     ;; Tests for text-1
     (should (string= "My blog" (cdr (assoc 'name link-1)))) ; Get only the value of 'name))
     (should (string= "http://example.com/blog" (cdr (assoc 'url link-1)))) ; Get only the value of 'url
@@ -54,7 +56,8 @@
     (should (null link-3)) ; No URL
     (should (null link-4)) ; No name
     (should (null link-5)) ; No URL, single word
-    (should (null link-6)))) ; Empty string
+    (should (null link-6))
+    (should (null link-7)))) ; Empty string
 
 (ert-deftest test-twtxt--get-feed ()
   (let* ((url "https://twtxt.andros.dev/")
@@ -64,7 +67,7 @@
 (ert-deftest test-twtxt--get-profile-from-feed ()
   (let ((profile (twtxt--get-profile-from-feed twtxt-feed-example)))
     (should (string= "foo" (cdr (assoc 'nick profile))))
-    (let ((urls (cdr (assoc 'urls profile))))
+    (let ((urls (cdr (assoc 'url profile))))
       (should (string= "https://foo.com" (car urls)))
       (should (string= "http://bar.com" (cadr urls)))
       (should (string= "gemini://baz.com" (caddr urls))))
