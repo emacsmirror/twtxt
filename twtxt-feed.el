@@ -131,7 +131,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
     feed))
 
 (defun twtxt--get-my-profile (&optional custom-twtxt-file)
-  "Get the profile of the user from the feed (path: twtxt-file). Parameters: TWTXT-FILE (string) Optional. Return: A list with the profile of the user."
+  "Get the profile of the user from the feed (path: twtxt-file). Parameters: CUSTOM-TWTXT-FILE (string) Optional. Return: A list with the profile of the user."
   (let ((feed nil))
     (with-temp-buffer
       (insert-file-contents (or custom-twtxt-file twtxt-file))
