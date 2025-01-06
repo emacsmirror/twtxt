@@ -46,6 +46,7 @@
 (require 'async)
 (require 'twtxt)
 
+(defvar twtxt--my-profile nil)
 (defvar twtxt--feeds nil)
 ;; Example of structure with Metadata Extension: https://twtxt.dev/exts/metadata.html
 ;; '((id . 1) ;; The id of the user, unique for each user
@@ -124,14 +125,22 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	      (lambda (&key error-thrown &allow-other-keys))))
     feed))
 
+(defun twtxt--get-my-profile ()
+  "Get the profile of the user from the feed (path: twtxt-file)."
+  (let ((feed nil))
+    (with-temp-buffer
+      (insert-file-contents twtxt-file) ;; Leer el archivo en el buffer temporal
+      (setq feed (buffer-string)))
+    (twtxt--get-profile-from-feed feed)))
+
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
   (list
    (cons 'id (gensym))
    (cons 'nick (twtxt--get-a-single-value feed "nick"))
    (cons 'url (twtxt--get-a-single-value feed "url"))
-   (cons 'link (mapcar #'twtxt--split-link (twtxt--get-a-single-value feed "link")))
-   (cons 'follow (twtxt--get-a-single-value feed "follow"))
+   (cons 'link (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed "link") '())))
+   (cons 'follow (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed "follow") '())))
    (cons 'avatar (twtxt--get-a-single-value feed "avatar"))
    (cons 'description (twtxt--get-a-single-value feed "description"))))
 
@@ -169,6 +178,9 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 ;;   ;; (run-hooks 'twtxt-after-fetch-posts-hook)
 ;;   twtxt--feeds
 ;;   )
+
+;; Initialize
+(setq twtxt--my-profile (twtxt--get-my-profile))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here

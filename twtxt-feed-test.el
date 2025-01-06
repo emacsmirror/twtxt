@@ -3,7 +3,7 @@
 (add-to-list 'load-path "twtxt-feed.el")
 (require 'ert)
 
-(defvar twtxt-feed-example "# Learn more about twtxt:
+(defconst twtxt-feed-example "# Learn more about twtxt:
 #     https://twtxt.readthedocs.io/en/stable/
 #
 # nick = foo
@@ -11,7 +11,13 @@
 # url =http://bar.com
 #   url= gemini://baz.com
 #avatar=https://foo.com/avatar.jpg
+# link= Website https://my-website.com
+#follow = joe https://example.com/twtxt.txt
+#  follow= jane https://jane.example.com/twtxt.txt
 #      DEScripTION= Full-Stack developer Emacs addicted ðŸ± Cat food opening
+#
+#   link   =   My blog http://blog.mi-website.com
+#
 
 2024-12-18T14:18:26+01:00	Hi Twtxt
 2024-12-18T14:54:56+01:00	I like it
@@ -24,10 +30,16 @@
 
 (ert-deftest test-twtxt--get-a-single-value ()
   (should (string= "foo" (twtxt--get-a-single-value twtxt-feed-example "nick")))
-  (let ((urls (twtxt--get-a-single-value twtxt-feed-example "url")))
+  (let ((urls (twtxt--get-a-single-value twtxt-feed-example "url"))
+	(follows (twtxt--get-a-single-value twtxt-feed-example "follow"))
+	(links (twtxt--get-a-single-value twtxt-feed-example "link")))
     (should (string= "https://foo.com" (car urls)))
     (should (string= "http://bar.com" (cadr urls)))
-    (should (string= "gemini://baz.com" (caddr urls))))
+    (should (string= "gemini://baz.com" (caddr urls)))
+    (should (string= "joe https://example.com/twtxt.txt" (car follows)))
+    (should (string= "jane https://jane.example.com/twtxt.txt" (cadr follows)))
+    (should (string= "Website https://my-website.com" (car links)))
+    (should (string= "My blog http://blog.mi-website.com" (cadr links))))
   (should (string= "https://foo.com/avatar.jpg" (twtxt--get-a-single-value twtxt-feed-example "avatar")))
   (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening" (twtxt--get-a-single-value twtxt-feed-example "description"))))
 
@@ -71,6 +83,16 @@
       (should (string= "https://foo.com" (car urls)))
       (should (string= "http://bar.com" (cadr urls)))
       (should (string= "gemini://baz.com" (caddr urls))))
+    (let ((follows (cdr (assoc 'follow profile))))
+      (should (string= "joe" (cdr (assoc 'name (nth 0 follows)))))
+      (should (string= "https://example.com/twtxt.txt" (cdr (assoc 'url (nth 0 follows)))))
+      (should (string= "jane" (cdr (assoc 'name (nth 1 follows)))))
+      (should (string= "https://jane.example.com/twtxt.txt" (cdr (assoc 'url (nth 1 follows))))))
+    (let ((links (cdr (assoc 'links profile))))
+      (should (string= "Website" (cdr (assoc 'name (nth 0 links)))))
+      (should (string= "https://my-website.com" (cdr (assoc 'url (nth 0 links)))))
+      (should (string= "My blog" (cdr (assoc 'name (nth 1 links)))))
+      (should (string= "http://blog.mi-website.com" (cdr (assoc 'url (nth 1 links))))))
     (should (string= "https://foo.com/avatar.jpg" (cdr (assoc 'avatar profile))))
     (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening"
                      (cdr (assoc 'description profile))))))
