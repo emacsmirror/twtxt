@@ -46,6 +46,7 @@
 
 ;;; Code:
 (require 'cl-lib)
+(add-to-list 'load-path ".")
 
 (defgroup twtxt nil
   "A twtxt client for Emacs."

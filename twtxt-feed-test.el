@@ -1,6 +1,6 @@
 ;;; twtxt-feed-test.el
 
-(add-to-list 'load-path "twtxt-feed.el")
+(require 'twtxt-feed)
 (require 'ert)
 
 (defconst twtxt-feed-example "# Learn more about twtxt:
@@ -88,7 +88,7 @@
       (should (string= "https://example.com/twtxt.txt" (cdr (assoc 'url (nth 0 follows)))))
       (should (string= "jane" (cdr (assoc 'name (nth 1 follows)))))
       (should (string= "https://jane.example.com/twtxt.txt" (cdr (assoc 'url (nth 1 follows))))))
-    (let ((links (cdr (assoc 'links profile))))
+    (let ((links (cdr (assoc 'link profile))))
       (should (string= "Website" (cdr (assoc 'name (nth 0 links)))))
       (should (string= "https://my-website.com" (cdr (assoc 'url (nth 0 links)))))
       (should (string= "My blog" (cdr (assoc 'name (nth 1 links)))))

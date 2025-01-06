@@ -182,5 +182,6 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
 
+
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
