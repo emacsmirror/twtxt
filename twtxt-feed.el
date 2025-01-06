@@ -46,6 +46,10 @@
 (require 'async)
 (require 'twtxt)
 
+;; Hooks
+(defvar twtxt-after-fetch-posts-hook nil)
+
+;; Variables
 (defvar twtxt--my-profile nil)
 (defvar twtxt--feeds nil)
 ;; Example of structure with Metadata Extension: https://twtxt.dev/exts/metadata.html
@@ -70,31 +74,32 @@ Returns:
   Either a single value (string) if only one match exists,
   or a list of values (strings) if multiple matches are found.
   If no match exists, returns nil."
-  (let* ((lines (split-string feed "\n"))
-         (regex (format "^#\\s-*%s\\s-*=?\\s-*\\(.+\\)$" (regexp-quote key))) ;; # key = value
-         values)
-    ;; Loop through each line and find matches
-    (dolist (line lines)
-      (when (string-match regex line)
-	(let ((value (match-string 1 line)))
-	  (setq values (cons value values))))) ;; Extract and clean matches
-    (if values
-        (if (= (length values) 1)
-            (car values) ;; Return single value if there's one
-          (reverse values)) ;; Return a list of values if there are multiple
-      nil))) ;; Return nil if no match found
+  (when (and (stringp feed) (stringp key))
+    (let* ((lines (split-string feed "\n"))
+	   (regex (format "^#\\s-*%s\\>\\s-*=?\\s-*\\(.+\\)$" (regexp-quote key))) ;; # key = value
+	   values)
+      ;; Loop through each line and find matches
+      (dolist (line lines)
+	(when (string-match regex line)
+	  (let ((value (match-string 1 line)))
+	    (setq values (cons value values))))) ;; Extract and clean matches
+      (if values
+	  (if (= (length values) 1)
+	      (car values) ;; Return single value if there's one
+	    (reverse values)) ;; Return a list of values if there are multiple
+	nil)))) ;; Return nil if no match found
 
 (defun twtxt--split-link (raw-text)
   "Split RAW-TEXT into a link with a name and a URL.
 Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). If the text doesn't contain a valid URL, return nil. Extension: https://twtxt.dev/exts/metadata.html"
   (when raw-text (let ((split-text (split-string raw-text " "))
-	 ;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-         (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
-     (if (and (> (length split-text) 1)
-              (string-match-p url-regex (car (last split-text))))
-         (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
-               (cons 'url (car (last split-text))))
-       nil))))
+		       ;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+		       (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
+		   (if (and (> (length split-text) 1)
+			    (string-match-p url-regex (car (last split-text))))
+		       (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
+			     (cons 'url (car (last split-text))))
+		     nil))))
 
 (defun twtxt--get-thread-id (text)
   "Get the thread id from TEXT. Hash extension: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' is 'ohmmloa'."
@@ -125,24 +130,25 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	      (lambda (&key error-thrown &allow-other-keys))))
     feed))
 
-(defun twtxt--get-my-profile ()
-  "Get the profile of the user from the feed (path: twtxt-file)."
+(defun twtxt--get-my-profile (&optional custom-twtxt-file)
+  "Get the profile of the user from the feed (path: twtxt-file). Parameters: TWTXT-FILE (string) Optional. Return: A list with the profile of the user."
   (let ((feed nil))
     (with-temp-buffer
-      (insert-file-contents twtxt-file) ;; Leer el archivo en el buffer temporal
+      (insert-file-contents (or custom-twtxt-file twtxt-file))
       (setq feed (buffer-string)))
     (twtxt--get-profile-from-feed feed)))
 
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
-  (list
-   (cons 'id (gensym))
-   (cons 'nick (twtxt--get-a-single-value feed "nick"))
-   (cons 'url (twtxt--get-a-single-value feed "url"))
-   (cons 'link (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed "link") '())))
-   (cons 'follow (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed "follow") '())))
-   (cons 'avatar (twtxt--get-a-single-value feed "avatar"))
-   (cons 'description (twtxt--get-a-single-value feed "description"))))
+  (let ((feed-without-twts (replace-regexp-in-string "^[^#].*\n?" "" feed)))
+    (list
+     (cons 'id (gensym))
+     (cons 'nick (twtxt--get-a-single-value feed-without-twts "nick"))
+     (cons 'url (twtxt--get-a-single-value feed-without-twts "url"))
+     (cons 'link (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed-without-twts "link") '())))
+     (cons 'follow (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed-without-twts "follow") '())))
+     (cons 'avatar (twtxt--get-a-single-value feed-without-twts "avatar"))
+     (cons 'description (twtxt--get-a-single-value feed-without-twts "description")))))
 
 (defun twtxt--get-twts-from-feed (feed)
   "Get the twts from a feed. Parameters: FEED (text). Return: A list with the twts from the feed: date and text."
@@ -164,23 +170,24 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
 
-;; (defun twtxt--get-twts-from-all-feeds ()
-;;   "Get the twts from all feeds. Return: A list with the twts from all feeds."
-;;   (setq twtxt--feeds nil) ;; Clear the feeds
-;;   (dolist (user twtxt-following)
-;;     (let* ((feed (twtxt--get-feed (car (cdr user))))
-;; 	   (profile (twtxt--get-profile-from-feed feed))
-;; 	   (twts (twtxt--get-twts-from-feed feed))
-;; 	   (user (append profile (list (cons 'twts twts)))))
-;;       (setq twtxt--feeds (cons user twtxt--feeds))
-;;       (message "Got twts from %s" (cdr (assoc 'nick profile)))
-;;       ))
-;;   ;; (run-hooks 'twtxt-after-fetch-posts-hook)
-;;   twtxt--feeds
-;;   )
+(defun twtxt--get-twts-from-all-feeds ()
+  "Get the twts from all feeds. Return: A list with the twts from all feeds."
+  (let ((twtxt--feeds nil))
+    (dolist (follow (cdr (assoc 'follow twtxt--my-profile)))
+      (let* ((feed (twtxt--get-feed (cdr (assoc 'url follow))))
+	     (profile (twtxt--get-profile-from-feed feed))
+	     (twts (twtxt--get-twts-from-feed feed))
+	     (user (append profile (list (cons 'twts twts)))))
+	(setq twtxt--feeds (cons user twtxt--feeds))
+	(message "Got twts from %s" (cdr (assoc 'nick profile)))
+	))
+    (run-hooks 'twtxt-after-fetch-posts-hook)
+    twtxt--feeds
+    ))
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
+;; (setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
 
 
 (provide 'twtxt-feed)

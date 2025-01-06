@@ -3,30 +3,10 @@
 (require 'twtxt-feed)
 (require 'ert)
 
-(defconst twtxt-feed-example "# Learn more about twtxt:
-#     https://twtxt.readthedocs.io/en/stable/
-#
-# nick = foo
-#url = https://foo.com
-# url =http://bar.com
-#   url= gemini://baz.com
-#avatar=https://foo.com/avatar.jpg
-# link= Website https://my-website.com
-#follow = joe https://example.com/twtxt.txt
-#  follow= jane https://jane.example.com/twtxt.txt
-#      DEScripTION= Full-Stack developer Emacs addicted ðŸ± Cat food opening
-#
-#   link   =   My blog http://blog.mi-website.com
-#
-
-2024-12-18T14:18:26+01:00	Hi Twtxt
-2024-12-18T14:54:56+01:00	I like it
-2024-12-23T08:33:19+01:00	Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback.
-
-2024-12-23T08:49:02+01:00	(#hsyv65q) Hello everyone! ðŸ˜
-2024-12-23T10:00:59+01:00	Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !
-
-")
+(defconst twtxt-feed-example-file "twtxt-debug.txt")
+(defconst twtxt-feed-example (with-temp-buffer
+			       (insert-file-contents twtxt-feed-example-file)
+			       (buffer-string)))
 
 (ert-deftest test-twtxt--get-a-single-value ()
   (should (string= "foo" (twtxt--get-a-single-value twtxt-feed-example "nick")))
@@ -34,10 +14,10 @@
 	(follows (twtxt--get-a-single-value twtxt-feed-example "follow"))
 	(links (twtxt--get-a-single-value twtxt-feed-example "link")))
     (should (string= "https://foo.com" (car urls)))
-    (should (string= "http://bar.com" (cadr urls)))
+    (should (string= "http://blog.bar.com" (cadr urls)))
     (should (string= "gemini://baz.com" (caddr urls)))
-    (should (string= "joe https://example.com/twtxt.txt" (car follows)))
-    (should (string= "jane https://jane.example.com/twtxt.txt" (cadr follows)))
+    (should (string= "andros https://twtxt.andros.dev" (car follows)))
+    (should (string= "prologic https://twtxt.net/user/prologic/twtxt.txt" (cadr follows)))
     (should (string= "Website https://my-website.com" (car links)))
     (should (string= "My blog http://blog.mi-website.com" (cadr links))))
   (should (string= "https://foo.com/avatar.jpg" (twtxt--get-a-single-value twtxt-feed-example "avatar")))
@@ -46,11 +26,11 @@
 (ert-deftest test-twtxt--split-link ()
   (let* ((text-1 "My blog http://example.com/blog")
          (link-1 (twtxt--split-link text-1))
-         (text-2 "Website gemini://example.com/")
+         (text-2 "Website gemini://my.example.com/")
          (link-2 (twtxt--split-link text-2))
          (text-3 "My blog")
          (link-3 (twtxt--split-link text-3))
-         (text-4 "http://example.com/blog")
+         (text-4 "https://example.com/blog")
          (link-4 (twtxt--split-link text-4))
          (text-5 "Website")
          (link-5 (twtxt--split-link text-5))
@@ -63,7 +43,7 @@
     (should (string= "http://example.com/blog" (cdr (assoc 'url link-1)))) ; Get only the value of 'url
     ;; Tests for text-2
     (should (string= "Website" (cdr (assoc 'name link-2)))) ; Get only the value of 'name
-    (should (string= "gemini://example.com/" (cdr (assoc 'url link-2)))) ; Get only the value of 'url
+    (should (string= "gemini://my.example.com/" (cdr (assoc 'url link-2)))) ; Get only the value of 'url
     ;; Tests for invalid inputs
     (should (null link-3)) ; No URL
     (should (null link-4)) ; No name
@@ -71,23 +51,29 @@
     (should (null link-6))
     (should (null link-7)))) ; Empty string
 
+(ert-deftest test-twtxt--get-thread-id ()
+  (should (string= "ohmmloa" (twtxt--get-thread-id "2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔"))))
+
 (ert-deftest test-twtxt--get-feed ()
   (let* ((url "https://twtxt.andros.dev/")
 	 (feed (twtxt--get-feed url)))
     (should (string= "andros" (twtxt--get-a-single-value feed "nick")))))
+
+(ert-deftest test-twtxt--twtxt--get-my-profile ()
+  (should (string= "foo" (cadr (assoc 'nick (twtxt--get-my-profile twtxt-feed-example-file))))))
 
 (ert-deftest test-twtxt--get-profile-from-feed ()
   (let ((profile (twtxt--get-profile-from-feed twtxt-feed-example)))
     (should (string= "foo" (cdr (assoc 'nick profile))))
     (let ((urls (cdr (assoc 'url profile))))
       (should (string= "https://foo.com" (car urls)))
-      (should (string= "http://bar.com" (cadr urls)))
+      (should (string= "http://blog.bar.com" (cadr urls)))
       (should (string= "gemini://baz.com" (caddr urls))))
     (let ((follows (cdr (assoc 'follow profile))))
-      (should (string= "joe" (cdr (assoc 'name (nth 0 follows)))))
-      (should (string= "https://example.com/twtxt.txt" (cdr (assoc 'url (nth 0 follows)))))
-      (should (string= "jane" (cdr (assoc 'name (nth 1 follows)))))
-      (should (string= "https://jane.example.com/twtxt.txt" (cdr (assoc 'url (nth 1 follows))))))
+      (should (string= "andros" (cdr (assoc 'name (nth 0 follows)))))
+      (should (string= "https://twtxt.andros.dev" (cdr (assoc 'url (nth 0 follows)))))
+      (should (string= "prologic" (cdr (assoc 'name (nth 1 follows)))))
+      (should (string= "https://twtxt.net/user/prologic/twtxt.txt" (cdr (assoc 'url (nth 1 follows))))))
     (let ((links (cdr (assoc 'link profile))))
       (should (string= "Website" (cdr (assoc 'name (nth 0 links)))))
       (should (string= "https://my-website.com" (cdr (assoc 'url (nth 0 links)))))
@@ -97,16 +83,22 @@
     (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening"
                      (cdr (assoc 'description profile))))))
 
-(ert-deftest test-twtxt--get-tweets-from-feed ()
+(ert-deftest test-twtxt--get-twts-from-feed ()
   (let ((test-posts '("Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !"
-		     "(#hsyv65q) Hello everyone! ðŸ˜"
-		     "Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback."
-		     "I like it"
+		      "(#hsyv65q) Hello everyone! ðŸ˜"
+		      "Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback."
+		      "I like it"
 		      "Hi Twtxt"))
-	(posts (twtxt--get-tweets-from-feed twtxt-feed-example)))
+	(posts (twtxt--get-twts-from-feed twtxt-feed-example)))
     (should (equal (length test-posts) (length posts)))
     (dotimes (i (length test-posts))
       (should (string= (cdr (assoc 'text (nth i posts))) (nth i test-posts))))))
+
+(ert-deftest test-twtxt--get-twts-from-all-feeds ()
+  (let ((profiles (twtxt--get-twts-from-all-feeds))))
+  (should (equal 2 (length profiles)))
+  (should (string= "andros" (cdr (assoc 'nick (nth 0 profiles)))))
+  (should (string= "prologic" (cdr (assoc 'nick (nth 1 profiles))))))
 
 
 (provide 'twtxt-feed-test)

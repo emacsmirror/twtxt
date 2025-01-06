@@ -76,8 +76,6 @@
 
 (defvar twtxt-post-tweet-hook nil)
 
-(defvar twtxt-after-fetch-posts-hook nil)
-
 (defun twtxt-get-datetime ()
   "Getting date and time according to RFC 3339 standard."
   (concat (format-time-string "%Y-%m-%dT%T")
