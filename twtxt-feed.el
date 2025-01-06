@@ -84,16 +84,23 @@ Returns:
       nil))) ;; Return nil if no match found
 
 (defun twtxt--split-link (raw-text)
-  "Split RAW-TEXT a link into a name and URL. For example: 'My blog http://example.com/blog' -> '(name . 'My blog') (url . 'http://example.com/blog')."
-  (let ((split-text (split-string raw-text " ")))
-    (if (length> split-text 1)
-	(list (cons 'name (butlast split-text)) (cons 'url (last split-text)))
+  "Split RAW-TEXT into a link with a name and a URL.
+Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). If the text doesn't contain a valid URL, return nil. Extension: https://twtxt.dev/exts/metadata.html"
+  (let ((split-text (split-string raw-text " "))
+	;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+        (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
+    (if (and (> (length split-text) 1)
+             (string-match-p url-regex (car (last split-text))))
+        (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
+              (cons 'url (car (last split-text))))
       nil)))
+
+(message "%s" (twtxt--split-link "My blog example.com"))
 
 (defun twtxt--get-thread-id (text)
   "Get the thread id from TEXT. Hash extension: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' is 'ohmmloa'."
   (let ((thread-id nil)
-	   (regex (format "^\(#\(\w+\)\)")))
+	(regex (format "^\(#\(\w+\)\)")))
     (when (string-match regex text)
       (setq thread-id (match-string 1 text)))
     thread-id))

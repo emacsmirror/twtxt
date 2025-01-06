@@ -31,6 +31,31 @@
   (should (string= "https://foo.com/avatar.jpg" (twtxt--get-a-single-value twtxt-feed-example "avatar")))
   (should (string= " Full-Stack developer Emacs addicted ðŸ± Cat food opening" (twtxt--get-a-single-value twtxt-feed-example "description"))))
 
+(ert-deftest test-twtxt--split-link ()
+  (let* ((text-1 "My blog http://example.com/blog")
+         (link-1 (twtxt--split-link text-1))
+         (text-2 "Website gemini://example.com/")
+         (link-2 (twtxt--split-link text-2))
+         (text-3 "My blog")
+         (link-3 (twtxt--split-link text-3))
+         (text-4 "http://example.com/blog")
+         (link-4 (twtxt--split-link text-4))
+         (text-5 "Website")
+         (link-5 (twtxt--split-link text-5))
+         (text-6 "")
+         (link-6 (twtxt--split-link text-6)))
+    ;; Tests for text-1
+    (should (string= "My blog" (cdr (assoc 'name link-1)))) ; Extraer solo el valor de 'name
+    (should (string= "http://example.com/blog" (cdr (assoc 'url link-1)))) ; Extraer solo el valor de 'url
+    ;; Tests for text-2
+    (should (string= "Website" (cdr (assoc 'name link-2)))) ; Extraer 'name
+    (should (string= "gemini://example.com/" (cdr (assoc 'url link-2)))) ; Extraer 'url
+    ;; Tests for invalid inputs
+    (should (null link-3)) ; No URL
+    (should (null link-4)) ; No name
+    (should (null link-5)) ; No URL, single word
+    (should (null link-6)))) ; Empty string
+
 (ert-deftest test-twtxt--get-feed ()
   (let* ((url "https://twtxt.andros.dev/")
 	 (feed (twtxt--get-feed url)))
