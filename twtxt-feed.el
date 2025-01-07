@@ -3,7 +3,7 @@
 ;; SPDX-License-Identifier: GPL-3.0
 
 ;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
-;; Colaborator: Andros - https://andros.dev
+;; Colaborator: Andros <https://andros.dev>
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
@@ -104,15 +104,15 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 (defun twtxt--get-thread-id (text)
   "Get the thread id from TEXT. Hash extension: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' is 'ohmmloa'."
   (let ((thread-id nil)
-	(regex (format "^\(#\(\w+\)\)")))
+	(regex "\\(#\\(\\w+\\)\\)"))
     (when (string-match regex text)
-      (setq thread-id (match-string 1 text)))
+      (setq thread-id (match-string 2 text)))
     thread-id))
 
 (defun twtxt--clean-thread-id (text)
   "Clean the thread id from TEXT. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?' is 'ohmmloa'. Hash extension: https://twtxt.dev/exts/twthashextension.html."
   (let ((cleaned-text text)
-	(regex (format "^\(#\(\w+\)\)")))
+	(regex (format "\(#(\w+)\)")))
     (when (string-match regex text)
       (setq cleaned-text (replace-regexp-in-string regex "" text)))
     cleaned-text))
