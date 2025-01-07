@@ -54,6 +54,11 @@
 (ert-deftest test-twtxt--get-thread-id ()
   (should (string= "ohmmloa" (twtxt--get-thread-id "2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔"))))
 
+(ert-deftest test-twtxt--clean-thread-id ()
+  (should (string= "2024-09-29T13:40:00Z   Is anyone alive?" (twtxt--clean-thread-id "2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?")))
+  (should (string= "2024-09-29T13:40:00Z   Is anyone alive?" (twtxt--clean-thread-id "2024-09-29T13:40:00Z   (#ohmmloa)Is anyone alive?")))
+  (should (string= "2024-09-29T13:40:00Z   Is anyone alive?" (twtxt--clean-thread-id "2024-09-29T13:40:00Z   Is anyone alive?"))))
+
 (ert-deftest test-twtxt--get-feed ()
   (let* ((url "https://twtxt.andros.dev/")
 	 (feed (twtxt--get-feed url)))
@@ -85,7 +90,7 @@
 
 (ert-deftest test-twtxt--get-twts-from-feed ()
   (let ((test-posts '("Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !"
-		      "(#hsyv65q) Hello everyone! ðŸ˜"
+		      "Hello everyone! ðŸ˜"
 		      "Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback."
 		      "I like it"
 		      "Hi Twtxt"))

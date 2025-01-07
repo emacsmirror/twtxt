@@ -63,6 +63,7 @@
 ;; (twts . ;; The twts of the user
 ;;                (((id . 1) ;; The id of the tweet, unique for each post
 ;; 		    (date . date) ;; The date of the tweet
+;; 		    (thread . "ohmmloa") ;; The thread id of the tweet. Or nil if it doesn't have a thread id.
 ;; 		    (text . "Hello, world!"))))) ;; The text of the tweet
 
 (defun twtxt--get-a-single-value (feed key)
@@ -103,19 +104,12 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 (defun twtxt--get-thread-id (text)
   "Get the thread id from TEXT. Hash extension: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' is 'ohmmloa'."
-  (let ((thread-id nil)
-	(regex "\\(#\\(\\w+\\)\\)"))
-    (when (string-match regex text)
-      (setq thread-id (match-string 2 text)))
-    thread-id))
+  (when (string-match "\\(#\\(\\w+\\)\\)" text)
+    (match-string 2 text)))
 
 (defun twtxt--clean-thread-id (text)
-  "Clean the thread id from TEXT. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?' is 'ohmmloa'. Hash extension: https://twtxt.dev/exts/twthashextension.html."
-  (let ((cleaned-text text)
-	(regex (format "\(#(\w+)\)")))
-    (when (string-match regex text)
-      (setq cleaned-text (replace-regexp-in-string regex "" text)))
-    cleaned-text))
+  "Clean the thread id from TEXT. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?' return '2024-09-29T13:40:00Z   Is anyone alive?'."
+  (replace-regexp-in-string "(#\\w+) *" "" text))
 
 (defun twtxt--get-feed (url)
   "Get the feed, text, from URL."
@@ -182,8 +176,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	(message "Got twts from %s" (cdr (assoc 'nick profile)))
 	))
     (run-hooks 'twtxt-after-fetch-posts-hook)
-    twtxt--feeds
-    ))
+    twtxt--feeds))
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
