@@ -60,7 +60,7 @@
     (should (string= "andros" (twtxt--get-a-single-value feed "nick")))))
 
 (ert-deftest test-twtxt--twtxt--get-my-profile ()
-  (should (string= "foo" (cadr (assoc 'nick (twtxt--get-my-profile twtxt-feed-example-file))))))
+  (should (string= "foo" (cdr (assoc 'nick (twtxt--get-my-profile twtxt-feed-example-file))))))
 
 (ert-deftest test-twtxt--get-profile-from-feed ()
   (let ((profile (twtxt--get-profile-from-feed twtxt-feed-example)))
