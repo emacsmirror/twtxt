@@ -27,10 +27,6 @@ Add twtxt to your ~load-path~ and require. Something like:
 
 #+BEGIN_SRC emacs-lisp
     (setq twtxt-file "~/my/twtxt") ;; Path to twtxt file. Default "~/twtxt"
-
-    ;; List following
-    (setq twtxt-following '(("alice" "https://example.org/alice.txt")
-  			     ("bob" "http://bobsplace.xyz/twtxt")))
 #+END_SRC
 
 If you don't have a twtxt file yet, you can create one using this template:
@@ -45,19 +41,23 @@ If you don't have a twtxt file yet, you can create one using this template:
 # description = I'm a hacker
 #+END_SRC
 
-** Optional: Using the Post-Tweet Hook
+* Manage followers
 
-You can use the ~twtxt-post-tweet-hook~ to perform additional actions automatically after posting a tweet. For example, you can upload your twtxt file to a server or execute other commands. Configure it as follows:
+You should add your followers to the ~twtxt-file~.
 
-#+BEGIN_SRC emacs-lisp
-  ;; Example: Upload twtxt file to a remote server using scp: scp twtxt.txt user@server:/your/path/twtxt.txt
-  (add-hook 'twtxt-post-tweet-hook (lambda () (call-process-shell-command (format "scp %s %s"
-  									 twtxt-file
-  									 "user@server:/your/path/twtxt.txt"
-  									 ) nil 0)))
+#+BEGIN_SRC text
+# Learn more about twtxt:
+#     https://twtxt.readthedocs.io/en/stable/
+#
+# nick = Foo
+#
+# ...
+#
+# follower = user https://example.org/twtxt.txt
+# follower = user2 https://example-2.org/twtxt.txt
 #+END_SRC
 
-This example uploads your twtxt file to a remote server using ~scp~ after every tweet you post.
+You can read more about the ~follower~ specification in the [[extension][https://twtxt.dev/exts/metadata.html#follow]].
 
 * Usage
 
@@ -79,3 +79,22 @@ Post a status update
 | ~C-c C-c~ | Post tweet |
 | ~C-c C-m~ | Add mention |
 | ~C-c C-k~ | Cancel tweet |
+
+* Hooks
+
+You can use the following hooks to perform additional actions automatically:
+
+| Name | Description |
+|------|------------|
+| ~twtxt-post-tweet-hook~ | Hook run after posting a tweet. |
+| ~twtxt-after-fetch-posts-hook~ | Hook run after fetching posts. |
+
+For example, upload your twtxt file to a server or execute other commands. Configure it as follows:
+
+#+BEGIN_SRC emacs-lisp
+  ;; Example: Upload twtxt file to a remote server using scp: scp twtxt.txt user@server:/your/path/twtxt.txt
+  (add-hook 'twtxt-post-tweet-hook (lambda () (call-process-shell-command (format "scp %s %s"
+  									 twtxt-file
+  									 "user@server:/your/path/twtxt.txt"
+  									 ) nil 0)))
+#+END_SRC

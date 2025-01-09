@@ -185,11 +185,18 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
     twtxt--feeds))
 
 (defun twtxt--timeline ()
-  "Get the timeline of the user."
+  "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date with structure: id author-id date text."
   (let ((timeline nil))
     (dolist (feed twtxt--feeds)
-      (setq timeline (append timeline (cdr (assoc 'twts feed)))))
-    (setq timeline (sort timeline (lambda (a b) (time-less-p (cdr (assoc 'date a)) (cdr (assoc 'date b))))) timeline)))
+      (let ((twts (cdr (assoc 'twts feed))))
+	(dolist (twt twts)
+	  (setq timeline (cons (list
+				(cons 'id (cdr (assoc 'id twt)))
+				(cons 'author-id (cdr (assoc 'id feed)))
+				(cons 'date (cdr (assoc 'date twt)))
+				(cons 'text (cdr (assoc 'text twt)))) timeline))))
+      )
+    (sort timeline (lambda (a b) (time-less-p (cdr (assoc 'date b)) (cdr (assoc 'date a))))) timeline))
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
