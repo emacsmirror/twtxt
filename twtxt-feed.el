@@ -45,6 +45,7 @@
 (require 'request)
 (require 'async)
 (require 'twtxt)
+(require 'seq)
 
 ;; Hooks
 (defvar twtxt-after-fetch-posts-hook nil)
@@ -198,9 +199,13 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
       )
     (sort timeline (lambda (a b) (time-less-p (cdr (assoc 'date b)) (cdr (assoc 'date a))))) timeline))
 
+(defun twtxt--profile-by-id (id)
+  "Get the profile of the user by ID. Parameters: ID (string). Return: A list with the profile of the user."
+  (car (seq-filter (lambda (feed) (string= id (cdr (assoc 'id feed)))) twtxt--feeds)))
+
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
-(setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
+;;(setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
