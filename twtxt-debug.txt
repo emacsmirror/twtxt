@@ -13,7 +13,8 @@
 #      DEScripTION= Full-Stack developer Emacs addicted ðŸ± Cat food opening
 #
 #   link   =   My blog http://blog.mi-website.com
-#
+# Legacy, don't use:
+#nick_alias = vain
 
 2024-12-18T14:18:26+01:00	Hi Twtxt
 2024-12-18T14:54:56+01:00	I like it

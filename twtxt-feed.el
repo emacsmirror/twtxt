@@ -134,13 +134,17 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
-  (let ((feed-without-twts (replace-regexp-in-string "^[^#].*\n?" "" feed)))
+  (let* ((feed-without-twts (replace-regexp-in-string "^[^#].*\n?" "" feed))
+	 (links (twtxt--get-a-single-value feed-without-twts "link"))
+	 (links-list (if (listp links) links (list links))) ; Transform into a list if it's a single value
+	 (follows (twtxt--get-a-single-value feed-without-twts "follow"))
+	 (follows-list (if (listp follows) follows (list follows)))) ; Transform into a list if it's a single value
     (list
      (cons 'id (gensym))
      (cons 'nick (twtxt--get-a-single-value feed-without-twts "nick"))
      (cons 'url (twtxt--get-a-single-value feed-without-twts "url"))
-     (cons 'link (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed-without-twts "link") '())))
-     (cons 'follow (mapcar #'twtxt--split-link (or (twtxt--get-a-single-value feed-without-twts "follow") '())))
+     (cons 'link (mapcar #'twtxt--split-link (delq nil links-list)))
+     (cons 'follow (mapcar #'twtxt--split-link (delq nil follows-list)))
      (cons 'avatar (twtxt--get-a-single-value feed-without-twts "avatar"))
      (cons 'description (twtxt--get-a-single-value feed-without-twts "description")))))
 
@@ -180,7 +184,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
-;; (setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
+(setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
 
 
 (provide 'twtxt-feed)
