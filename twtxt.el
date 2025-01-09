@@ -57,22 +57,10 @@
   :type 'file
   :group 'twtxt)
 
-(defcustom twtxt-following nil
-  "Following list."
-  :type '(repeat (list (string :tag "Name")
-		       (string :tag "URL")))
-  :group 'twtxt)
 
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
 (defconst twtxt--char-newline (char-to-string #x2028))
 
-(defconst twtxt-line "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500")
-
-(defvar twtxt-timeline-list nil
-  "Timeline list.")
-
-(defvar twtxt-username ""
-  "Temporary storage of username.")
 
 (defvar twtxt-post-tweet-hook nil)
 
@@ -84,53 +72,22 @@
 	     (concat (substring x 0 3) ":" (substring x 3 5)))
 	   (format-time-string "%z"))))
 
-(defun twtxt-parse-text (text)
-  "Convert TEXT to list post."
-  (split-string text "\n"))
 
 (defun twtxt-replace-tab (str)
   "Replacing tabs with line breaks in STR."
   (replace-regexp-in-string "\t" "\n" str))
 
-(defun twtxt-sort-posts (posts)
-  "Sort the list of twtxt POSTS by RFC 3339 date, newest first."
-  (let ((is-valid-post (lambda (line)
-                         (string-match-p rfc3339-regex
-                                         (car (split-string line "\t")))))
-        (extract-date (lambda (line)
-                        (date-to-time (car (split-string line "\t"))))))
-    (let ((valid-posts (cl-remove-if-not is-valid-post posts)))
-      (if valid-posts
-          (sort valid-posts
-                (lambda (a b)
-                  (time-less-p (funcall extract-date b)
-                               (funcall extract-date a))))
-        (progn
-          (message "No valid posts found in the provided list.")
-          nil)))))
 
-(defun twtxt-append-username (text)
-  "Append username in TEXT."
-  (mapcar (lambda (item)
-	    (concat twtxt-username "\t" item))
-	  (twtxt-parse-text text)))
 (defun twtxt-replace-newlines (str)
   "Replace newline characters in STR with the Unicode character \\u2028. Source: https://twtxt.dev/exts/multiline.html"
   (replace-regexp-in-string "\n" (char-to-string #x2028) str))
 
-(defun twtxt-push-text (text)
-  "Concatenate the resulting TEXT with the current list."
-  (setq twtxt-timeline-list (append twtxt-timeline-list (twtxt-append-username text))))
 
-(defun twtxt-fetch (url)
-  "Getting text by URL."
-  (twtxt--get-tweets-from-all-feeds))
+(defun twtxt-timeline ()
+  "View your timeline."
+  (interactive)
 
-(defun twtxt-fetch-list ()
-  "Getting a list of texts."
-  (mapc (lambda (item)
-	  (setq twtxt-username (concat "[[" (car (cdr item)) "][" (car item) "]]"))
-	  (twtxt-fetch (car (cdr item)))) twtxt-following))
+  )
 
 (defun twtxt-timeline--previous ()
   "Move to the previous post."
@@ -174,20 +131,6 @@
          (selected-user (completing-read "Mention: " user-options nil t)))
     (when selected-user
       (insert "@<" selected-user "> "))))
-
-
-(defun twtxt-timeline ()
-  "View your timeline."
-  (interactive)
-  ;; Fetch texts
-  (twtxt-fetch-list)
-  ;; Sort posts
-  (let ((sorted-list (twtxt-sort-posts twtxt-timeline-list)))
-    (if sorted-list
-        (twtxt-timeline-buffer sorted-list)
-      (message "No valid posts found in your timeline.")))
-  ;; Reset temporal data
-  (setq twtxt-timeline-list nil))
 
 
 (defun twtxt-post-buffer ()
