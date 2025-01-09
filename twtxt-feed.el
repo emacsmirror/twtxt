@@ -66,7 +66,7 @@
 ;; 		    (thread . "ohmmloa") ;; The thread id of the tweet. Or nil if it doesn't have a thread id.
 ;; 		    (text . "Hello, world!"))))) ;; The text of the tweet
 
-(defun twtxt--get-a-single-value (feed key)
+(defun twtxt--get-value (feed key)
   "Extract a single or multiple values from a twtxt feed based on a KEY.
 Parameters:
   FEED (string) - The complete twtxt feed as a string.
@@ -77,18 +77,19 @@ Returns:
   If no match exists, returns nil."
   (when (and (stringp feed) (stringp key))
     (let* ((lines (split-string feed "\n"))
-	   (regex (format "^#\\s-*%s\\>\\s-*=?\\s-*\\(.+\\)$" (regexp-quote key))) ;; # key = value
+	   (regex (concat "^#\s*" (regexp-quote key) "\s*=\s*\\(.+\\)$")) ;; # key = value
 	   values)
       ;; Loop through each line and find matches
       (dolist (line lines)
 	(when (string-match regex line)
-	  (let ((value (match-string 1 line)))
+	  (let ((value (string-trim (match-string 1 line))))
 	    (setq values (cons value values))))) ;; Extract and clean matches
       (if values
 	  (if (= (length values) 1)
 	      (car values) ;; Return single value if there's one
 	    (reverse values)) ;; Return a list of values if there are multiple
 	nil)))) ;; Return nil if no match found
+
 
 (defun twtxt--split-link (raw-text)
   "Split RAW-TEXT into a link with a name and a URL.
@@ -135,18 +136,18 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
   (let* ((feed-without-twts (replace-regexp-in-string "^[^#].*\n?" "" feed))
-	 (links (twtxt--get-a-single-value feed-without-twts "link"))
+	 (links (twtxt--get-value feed-without-twts "link"))
 	 (links-list (if (listp links) links (list links))) ; Transform into a list if it's a single value
-	 (follows (twtxt--get-a-single-value feed-without-twts "follow"))
+	 (follows (twtxt--get-value feed-without-twts "follow"))
 	 (follows-list (if (listp follows) follows (list follows)))) ; Transform into a list if it's a single value
     (list
      (cons 'id (gensym))
-     (cons 'nick (twtxt--get-a-single-value feed-without-twts "nick"))
-     (cons 'url (twtxt--get-a-single-value feed-without-twts "url"))
+     (cons 'nick (twtxt--get-value feed-without-twts "nick"))
+     (cons 'url (twtxt--get-value feed-without-twts "url"))
      (cons 'link (mapcar #'twtxt--split-link (delq nil links-list)))
      (cons 'follow (mapcar #'twtxt--split-link (delq nil follows-list)))
-     (cons 'avatar (twtxt--get-a-single-value feed-without-twts "avatar"))
-     (cons 'description (twtxt--get-a-single-value feed-without-twts "description")))))
+     (cons 'avatar (twtxt--get-value feed-without-twts "avatar"))
+     (cons 'description (twtxt--get-value feed-without-twts "description")))))
 
 (defun twtxt--get-twts-from-feed (feed)
   "Get the twts from a feed. Parameters: FEED (text). Return: A list with the twts from the feed: date and text."
@@ -179,13 +180,20 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	(setq twtxt--feeds (cons user twtxt--feeds))
 	(message "Got twts from %s" (cdr (assoc 'nick profile)))
 	))
+    (message "Finished!")
     (run-hooks 'twtxt-after-fetch-posts-hook)
     twtxt--feeds))
+
+(defun twtxt--timeline ()
+  "Get the timeline of the user."
+  (let ((timeline nil))
+    (dolist (feed twtxt--feeds)
+      (setq timeline (append timeline (cdr (assoc 'twts feed)))))
+    (setq timeline (sort timeline (lambda (a b) (time-less-p (cdr (assoc 'date a)) (cdr (assoc 'date b))))) timeline)))
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
 (setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
-
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
