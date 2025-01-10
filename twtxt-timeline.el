@@ -1,7 +1,6 @@
 ;; Imports
 (require 'widget)
 (require 'url)
-(require 'relative-date)
 (require 'twtxt)
 (require 'twtxt-feed)
 
@@ -32,10 +31,6 @@
       (kill-buffer buffer))))
 
 
-
-
-
-
 ;; Layout
 (defun twtxt--timeline-layout ()
   "Create the main layout for the welcome screen."
@@ -50,20 +45,27 @@
     (let* ((profile (twtxt--profile-by-id (cdr (assoc 'author-id twts))))
 	   (nick (cdr (assoc 'nick profile)))
 	   (avatar-url (cdr (assoc 'avatar profile)))
-	   (date (encode-time (cdr (assoc 'date twts))))
+	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twts)))))
 	   (text (cdr (assoc 'text twts))))
       (widget-insert "\n")
       ;; avatar
-      (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
+      ;; (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
       (widget-insert "\n")
       ;; text
-      (widget-insert (concat " " text))
+      (widget-insert text)
+      (widget-insert "\n\n")
       ;; nick + date
-      (widget-insert (concat " " nick " - " date))
+      (widget-insert (concat nick " - " date
+			     ))
       (widget-insert "\n")
       (widget-insert twtxt--separator)))
 
   (use-local-map widget-keymap)
+  ;; Close shortcut (q) kill the buffer
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
+			   (kill-buffer twtxt--timeline-name-buffer))
+		 "Close")
   (widget-setup)
   (display-line-numbers-mode 0))
 

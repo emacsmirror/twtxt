@@ -185,19 +185,30 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
     (run-hooks 'twtxt-after-fetch-posts-hook)
     twtxt--feeds))
 
+(defun twtxt--normalize-date (date)
+  "Normalize DATE by replacing `nil` values in `parse-time-string` with defaults.
+DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
+  (mapcar (lambda (el) (or el 0)) date))
 (defun twtxt--timeline ()
-  "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date with structure: id author-id date text."
-  (let ((timeline nil))
-    (dolist (feed twtxt--feeds)
-      (let ((twts (cdr (assoc 'twts feed))))
-	(dolist (twt twts)
-	  (setq timeline (cons (list
-				(cons 'id (cdr (assoc 'id twt)))
-				(cons 'author-id (cdr (assoc 'id feed)))
-				(cons 'date (cdr (assoc 'date twt)))
-				(cons 'text (cdr (assoc 'text twt)))) timeline))))
-      )
-    (sort timeline (lambda (a b) (time-less-p (cdr (assoc 'date b)) (cdr (assoc 'date a))))) timeline))
+  "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date with the structure: (id author-id date text)."
+  (let* ((timeline (mapcan (lambda (feed)
+                             (let ((author-id (cdr (assoc 'id feed))) ;; Get author ID once
+                                   (twts (cdr (assoc 'twts feed)))) ;; Get tweets
+                               (mapcar (lambda (twt)
+                                         (list
+                                          (cons 'id (cdr (assoc 'id twt)))
+                                          (cons 'author-id author-id)
+                                          (cons 'date (cdr (assoc 'date twt)))
+                                          (cons 'text (cdr (assoc 'text twt)))))
+                                       twts)))
+                           twtxt--feeds))
+	 (timeline-sorted
+	  (sort timeline
+		(lambda (a b)
+		  (time-less-p
+		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date b))))
+		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date a)))))))))
+    timeline))
 
 (defun twtxt--profile-by-id (id)
   "Get the profile of the user by ID. Parameters: ID (string). Return: A list with the profile of the user."
@@ -205,7 +216,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
-;;(setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
+(setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
