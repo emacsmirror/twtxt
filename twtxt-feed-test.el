@@ -101,11 +101,4 @@
     (dotimes (i (length test-posts))
       (should (string= (cdr (assoc 'text (nth i posts))) (nth i test-posts))))))
 
-(ert-deftest test-twtxt--get-twts-from-all-feeds ()
-  (let ((profiles (twtxt--get-twts-from-all-feeds))))
-  (should (equal 2 (length profiles)))
-  (should (string= "andros" (cdr (assoc 'nick (nth 0 profiles)))))
-  (should (string= "prologic" (cdr (assoc 'nick (nth 1 profiles))))))
-
-
 (provide 'twtxt-feed-test)

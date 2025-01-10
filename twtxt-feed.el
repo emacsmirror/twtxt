@@ -174,16 +174,14 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 (defun twtxt--get-twts-from-all-feeds ()
   "Get the twts from all feeds. Return: A list with the twts from all feeds."
-  (let ((twtxt--feeds nil))
+  (let ((twtxt--feeds twtxt--my-profile)) ;; Add my profile to the list of feeds
     (dolist (follow (cdr (assoc 'follow twtxt--my-profile)))
       (let* ((feed (twtxt--get-feed (cdr (assoc 'url follow))))
 	     (profile (twtxt--get-profile-from-feed feed))
 	     (twts (twtxt--get-twts-from-feed feed))
 	     (user (append profile (list (cons 'twts twts)))))
 	(setq twtxt--feeds (cons user twtxt--feeds))
-	;; Add the twts to the user profile
-	(setq twtxt--feeds
-	      (cons twtxt--feeds (cdr (assoc 'twts twtxt--my-profile))))
+	(debug twtxt--feeds)
 	(message "Got twts from %s" (cdr (assoc 'nick profile)))))
     (message "Finished!")
     (run-hooks 'twtxt-after-fetch-posts-hook)
