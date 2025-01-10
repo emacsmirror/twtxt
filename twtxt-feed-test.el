@@ -52,7 +52,9 @@
     (should (null link-7)))) ; Empty string
 
 (ert-deftest test-twtxt--get-thread-id ()
-  (should (string= "ohmmloa" (twtxt--get-thread-id "2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔"))))
+  (should (string= "ohmmloa" (twtxt--get-thread-id "2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔")))
+  (should (not (twtxt--get-thread-id "2024-09-29T13:40:00Z   Hello world #twtxt #emacs")))
+  (should (string= "asdfgha" (twtxt--get-thread-id "2024-09-29T13:40:00Z   (#asdfgha) Hello world #twtxt #emacs"))))
 
 (ert-deftest test-twtxt--clean-thread-id ()
   (should (string= "2024-09-29T13:40:00Z   Is anyone alive?" (twtxt--clean-thread-id "2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?")))

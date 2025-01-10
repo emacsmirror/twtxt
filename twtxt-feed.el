@@ -105,9 +105,9 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 		     nil))))
 
 (defun twtxt--get-thread-id (text)
-  "Get the thread id from TEXT. Hash extension: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' is 'ohmmloa'."
-  (when (string-match "\\(#\\(\\w+\\)\\)" text)
-    (match-string 2 text)))
+  "Get the thread id from TEXT. Hash extension according to: https://twtxt.dev/exts/twthashextension.html. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive? 🤔' returns 'ohmmloa'."
+  (when (string-match "#\\([a-zA-Z0-9]\\{7\\}\\)" text)
+    (match-string 1 text)))
 
 (defun twtxt--clean-thread-id (text)
   "Clean the thread id from TEXT. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?' return '2024-09-29T13:40:00Z   Is anyone alive?'."
@@ -132,7 +132,9 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
     (with-temp-buffer
       (insert-file-contents (or custom-twtxt-file twtxt-file))
       (setq feed (buffer-string)))
-    (twtxt--get-profile-from-feed feed)))
+    (let* ((profile (twtxt--get-profile-from-feed feed))
+	   (twts (twtxt--get-twts-from-feed feed)))
+      (append profile (list (cons 'twts twts))))))
 
 (defun twtxt--get-profile-from-feed (feed)
   "Get the profile of the user from the feed. Parameters: FEED (text). Return: A list with the profile of the user."
@@ -179,16 +181,20 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	     (twts (twtxt--get-twts-from-feed feed))
 	     (user (append profile (list (cons 'twts twts)))))
 	(setq twtxt--feeds (cons user twtxt--feeds))
-	(message "Got twts from %s" (cdr (assoc 'nick profile)))
-	))
+	;; Add the twts to the user profile
+	(setq twtxt--feeds
+	      (cons twtxt--feeds (cdr (assoc 'twts twtxt--my-profile))))
+	(message "Got twts from %s" (cdr (assoc 'nick profile)))))
     (message "Finished!")
     (run-hooks 'twtxt-after-fetch-posts-hook)
     twtxt--feeds))
+
 
 (defun twtxt--normalize-date (date)
   "Normalize DATE by replacing `nil` values in `parse-time-string` with defaults.
 DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
   (mapcar (lambda (el) (or el 0)) date))
+
 (defun twtxt--timeline ()
   "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date with the structure: (id author-id date text)."
   (let* ((timeline (mapcan (lambda (feed)
