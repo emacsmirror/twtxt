@@ -86,8 +86,7 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
-
-  )
+  (twtxt--timeline-layout))
 
 (defun twtxt-timeline--previous ()
   "Move to the previous post."
@@ -100,24 +99,6 @@
   (interactive)
   ;; Search for the next twtxt-line
   (search-forward (concat twtxt-line "\n\n")))
-
-
-(defun twtxt-timeline-buffer (data)
-  "Create buffer and DATA recording."
-  (switch-to-buffer (get-buffer-create "*twtxt-timeline*"))
-  (mapc (lambda (item)
-	  ;; Line
-	  (insert twtxt-line)
-	  (insert "\n\n")
-          (insert (twtxt-replace-tab item))
-          (insert "\n\n")) data)
-  (org-mode)
-  (use-local-map (let ((map (make-sparse-keymap)))
-                   (set-keymap-parent map text-mode-map)
-		   (define-key map (kbd "p") 'twtxt-timeline--previous)
-                   (define-key map (kbd "n") 'twtxt-timeline--next)
-		   map))
-  (goto-char (point-min)))
 
 
 (defun twtxt-post--mention ()
