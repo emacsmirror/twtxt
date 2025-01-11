@@ -3,13 +3,17 @@
 (require 'url)
 (require 'twtxt)
 (require 'twtxt-feed)
+(require 'cl-lib)
 
 (eval-when-compile
   (require 'wid-edit))
 
 ;; Variables
 (defconst twtxt--timeline-name-buffer "*twtxt - Timeline*")
-(defconst twtxt--separator "\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500")
+(defconst twtxt--timeline-margin 20)
+(defvar twtxt--timeline-separator
+  (make-string
+   (- (window-width) (* 2 twtxt--timeline-margin)) ?\u2500))
 
 ;; Functions
 (defun put-image-from-url (url pos &optional width)
@@ -30,7 +34,6 @@
 	  (put-image (create-image data nil t :width width) pos))
       (kill-buffer buffer))))
 
-
 ;; Layout
 (defun twtxt--timeline-layout ()
   "Create the main layout for the welcome screen."
@@ -40,34 +43,49 @@
     (erase-buffer))
   (remove-overlays)
   (erase-buffer)
-
-  (dolist (twts (twtxt--timeline))
+  ;; Controls
+  (widget-insert "\n")
+  (widget-create 'push-button
+		 :button-face '(:background "green" :foreground "white")
+		 :notify (lambda (&rest ignore)
+			   (twtxt--timeline-layout))
+		 "New post")
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
+			   (twtxt--timeline-layout))
+		 "Refresh")
+  (widget-insert "\n\n")
+  (widget-insert twtxt--timeline-separator)
+  (widget-insert "\n\n")
+  ;; twtxts
+  (dolist (twts (cl-subseq (twtxt--timeline) 0 5))
     (let* ((profile (twtxt--profile-by-id (cdr (assoc 'author-id twts))))
 	   (nick (cdr (assoc 'nick profile)))
 	   (avatar-url (cdr (assoc 'avatar profile)))
+	   (thead (cdr (assoc 'thread twts)))
 	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twts)))))
 	   (text (cdr (assoc 'text twts))))
-      (widget-insert "\n")
-      ;; avatar
-      ;; (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
-      (widget-insert "\n")
       ;; text
       (widget-insert text)
       (widget-insert "\n\n")
+      ;; avatar
+      (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
       ;; nick + date
-      (widget-insert (concat nick " - " date
-			     ))
+      (widget-insert (concat "  " nick " - " date " "))
+      (if thead (widget-create 'push-button "Go to thread") (widget-create 'push-button "Reply"))
+      ;; Separator
       (widget-insert "\n")
-      (widget-insert twtxt--separator)))
+      (widget-insert twtxt--timeline-separator)
+      (widget-insert "\n")
+      ))
 
   (use-local-map widget-keymap)
-  ;; Close shortcut (q) kill the buffer
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (kill-buffer twtxt--timeline-name-buffer))
-		 "Close")
   (widget-setup)
-  (display-line-numbers-mode 0))
+  (display-line-numbers-mode 0)
+  (set-window-margins nil twtxt--timeline-margin twtxt--timeline-margin)
+  ;; Go to the top of the buffer
+  (goto-char (point-min))
+  (read-only-mode 1))
 
 ;; Init
 (twtxt--timeline-layout)
