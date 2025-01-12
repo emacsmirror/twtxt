@@ -42,9 +42,10 @@
 
 
 ;;; Code:
+(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
+(require 'twtxt)
 (require 'request)
 (require 'async)
-(require 'twtxt)
 (require 'seq)
 
 ;; Hooks

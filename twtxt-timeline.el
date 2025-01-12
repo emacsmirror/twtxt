@@ -40,10 +40,11 @@
 ;; integrates well with UNIX command line utilities.
 
 ;;; Code:
-(require 'widget)
-(require 'url)
+(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
 (require 'twtxt)
 (require 'twtxt-feed)
+(require 'widget)
+(require 'url)
 (require 'cl-lib)
 
 (eval-when-compile
