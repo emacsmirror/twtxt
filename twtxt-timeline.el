@@ -41,7 +41,7 @@
 ;; integrates well with UNIX command line utilities.
 
 ;;; Code:
-(require 'twtxt)
+(require 'twtxt-feed)
 (require 'widget)
 (require 'url)
 (require 'cl-lib)
@@ -101,7 +101,6 @@
   (widget-insert twtxt--timeline-separator)
   (widget-insert "\n\n")
   ;; twtxts
-  (debug twtxt--timeline)
   (dolist (twts (cl-subseq (twtxt--timeline)
 			   (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 			   (* twtxt--twtxts-page twtxt--twtxts-per-page)))

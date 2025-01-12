@@ -56,18 +56,14 @@
   "A twtxt client for Emacs."
   :group 'twtxt)
 
+
 (defcustom twtxt-file "~/twtxt"
   "Path to twtxt file."
   :type 'file
   :group 'twtxt)
 
-(defvar twtxt--my-profile nil)
-(defvar twtxt--feeds nil)
+
 (defvar twtxt-post-tweet-hook nil)
-
-;; Multiline Extension: https://twtxt.dev/exts/multiline.html
-(defconst twtxt--char-newline (char-to-string #x2028))
-
 
 
 (defun twtxt-get-datetime ()

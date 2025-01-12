@@ -1,7 +1,7 @@
 ;;; twtxt-feed-test.el
 ;;; -*- coding: utf-8 -*-
 ;;; -*- lexical-binding: t -*-
-
+(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
 (require 'twtxt-feed)
 (require 'ert)
 

@@ -42,7 +42,7 @@
 
 
 ;;; Code:
-(require 'twtxt)
+(require 'twtxt-variables)
 (require 'request)
 (require 'async)
 (require 'seq)
@@ -51,6 +51,8 @@
 (defvar twtxt-after-fetch-posts-hook nil)
 
 ;; Variables
+(defvar twtxt--my-profile nil)
+(defvar twtxt--feeds nil)
 
 ;; Example of structure with Metadata Extension: https://twtxt.dev/exts/metadata.html
 ;; '((id . 1) ;; The id of the user, unique for each user
