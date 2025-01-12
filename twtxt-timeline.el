@@ -1,4 +1,5 @@
-;;; twtxt-timeline.el --- A twtxt client for Emacs
+;;; twtxt-timeline.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
+;;;
 
 ;; SPDX-License-Identifier: GPL-3.0
 
@@ -40,9 +41,7 @@
 ;; integrates well with UNIX command line utilities.
 
 ;;; Code:
-(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
 (require 'twtxt)
-(require 'twtxt-feed)
 (require 'widget)
 (require 'url)
 (require 'cl-lib)
@@ -90,17 +89,19 @@
   (widget-insert "\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt--timeline-layout))
+			   (twtxt-post-buffer))
+		 :help-echo "Publish a new twtxt post."
 		 " ＋ New post ")
   (widget-insert " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt--timeline-layout))
+			   (twtxt-timeline))
 		 " ↺ Refresh timeline ")
   (widget-insert "\n\n")
   (widget-insert twtxt--timeline-separator)
   (widget-insert "\n\n")
   ;; twtxts
+  (debug twtxt--timeline)
   (dolist (twts (cl-subseq (twtxt--timeline)
 			   (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 			   (* twtxt--twtxts-page twtxt--twtxts-per-page)))
@@ -117,7 +118,9 @@
       (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
       ;; nick + date
       (widget-insert (concat "  " nick " - " date " "))
-      (if thead (widget-create 'push-button "Go to thread") (widget-create 'push-button " ↳ Reply "))
+      (if thead (widget-create 'push-button
+			       :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
+			       "Go to thread") (widget-create 'push-button " ↳ Reply "))
       ;; Separator
       (widget-insert "\n")
       (widget-insert twtxt--timeline-separator)
@@ -127,8 +130,16 @@
   (widget-insert "\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
+			   (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
 			   (twtxt--timeline-layout))
 		 " Next page → ")
+  (widget-insert "\n\n")
+  (when (> twtxt--twtxts-page 1)
+    (widget-create 'push-button
+		   :notify (lambda (&rest ignore)
+			     (setq twtxt--twtxts-page (1- twtxt--twtxts-page))
+			     (twtxt--timeline-layout))
+		   " ← Previous page "))
   (use-local-map widget-keymap)
   (widget-setup)
   (display-line-numbers-mode 0)
@@ -138,3 +149,4 @@
   (read-only-mode 1))
 
 (provide 'twtxt-timeline)
+;;; twtxt-timeline.el ends here

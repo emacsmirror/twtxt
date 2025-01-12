@@ -1,4 +1,4 @@
-;;; twtxt-feed.el --- A twtxt client for Emacs
+;;; twtxt-feed.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
 
 ;; SPDX-License-Identifier: GPL-3.0
 
@@ -42,7 +42,6 @@
 
 
 ;;; Code:
-(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
 (require 'twtxt)
 (require 'request)
 (require 'async)
@@ -52,8 +51,7 @@
 (defvar twtxt-after-fetch-posts-hook nil)
 
 ;; Variables
-(defvar twtxt--my-profile nil)
-(defvar twtxt--feeds nil)
+
 ;; Example of structure with Metadata Extension: https://twtxt.dev/exts/metadata.html
 ;; '((id . 1) ;; The id of the user, unique for each user
 ;; (nick . "Foo") ;; The nick of the user
@@ -220,9 +218,9 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
   "Get the profile of the user by ID. Parameters: ID (string). Return: A list with the profile of the user."
   (car (seq-filter (lambda (feed) (string= id (cdr (assoc 'id feed)))) twtxt--feeds)))
 
+
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
-(setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here

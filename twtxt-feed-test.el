@@ -1,4 +1,6 @@
 ;;; twtxt-feed-test.el
+;;; -*- coding: utf-8 -*-
+;;; -*- lexical-binding: t -*-
 
 (require 'twtxt-feed)
 (require 'ert)

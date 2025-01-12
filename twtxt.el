@@ -1,4 +1,4 @@
-;;; twtxt.el --- A twtxt client for Emacs
+;;; twtxt.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
 
 ;; SPDX-License-Identifier: GPL-3.0
 
@@ -45,7 +45,10 @@
 ;; Post a status update `M-x twtxt-post`
 
 ;;; Code:
+
+;; Autoload
 (add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
+(require 'twtxt-feed)
 (require 'twtxt-timeline)
 (require 'cl-lib)
 
@@ -58,12 +61,14 @@
   :type 'file
   :group 'twtxt)
 
+(defvar twtxt--my-profile nil)
+(defvar twtxt--feeds nil)
+(defvar twtxt-post-tweet-hook nil)
 
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
 (defconst twtxt--char-newline (char-to-string #x2028))
 
 
-(defvar twtxt-post-tweet-hook nil)
 
 (defun twtxt-get-datetime ()
   "Getting date and time according to RFC 3339 standard."
@@ -87,19 +92,9 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
+  (setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
+  (setq twtxt--twtxts-page 1)
   (twtxt--timeline-layout))
-
-(defun twtxt-timeline--previous ()
-  "Move to the previous post."
-  (interactive)
-  ;; Search for the previous twtxt-line
-  (search-backward (concat twtxt-line "\n\n")))
-
-(defun twtxt-timeline--next ()
-  "Move to the next post."
-  (interactive)
-  ;; Search for the next twtxt-line
-  (search-forward (concat twtxt-line "\n\n")))
 
 
 (defun twtxt-post--mention ()
