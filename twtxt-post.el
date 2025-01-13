@@ -120,7 +120,7 @@
       ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
       (dolist (mention-url twtxt--mentions)
 	(request
-	  mention-url
+	 (car mention-url)
 	  :type "GET"
 	  :headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
 		     ("Content-Type" . "text/plain; charset=utf-8"))))
