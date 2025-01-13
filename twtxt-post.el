@@ -55,7 +55,7 @@
 
 (defun twtxt--replace-newlines (str)
   "Replace newline characters in STR with the Unicode character \\u2028. Source: https://twtxt.dev/exts/multiline.html"
-  (replace-regexp-in-string "\n" (char-to-string #x2028) str))
+  (replace-regexp-in-string "\n" (char-to-string #x2028) (string-trim str)))
 
 
 (defun twtxt--insert-mention ()
@@ -96,21 +96,19 @@
 (defun twtxt--post-confirm ()
   "Post the content of the buffer as a new status update."
   (interactive)
-  (let ((post (buffer-substring-no-properties
-               (save-excursion
-                 (goto-char (point-min))
-                 (forward-paragraph)
-                 (forward-line 1)
-                 (point))
-               (point-max))))
+  (let* ((help-lines 5) ;; Number of help lines at the beginning of the buffer.
+         (post-start (save-excursion
+                       (goto-char (point-min))
+                       (forward-line help-lines) ;; Jump over help lines.
+                       (point)))
+         (post (buffer-substring-no-properties post-start (point-max))))
     (when (and post (not (string-blank-p post)))
       (append-to-file
        (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
        nil
        twtxt-file)
-      (message "Posted: %s" post)
-      ;; (run-hooks 'twtxt-post-tweet-hook)
-      )
+      (run-hooks 'twtxt-post-tweet-hook)
+      (message "Posted: %s" post))
     (kill-buffer)))
 
 (defun twtxt--post-cancel ()
