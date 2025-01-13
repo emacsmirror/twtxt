@@ -174,6 +174,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 (defun twtxt--get-twts-from-all-feeds ()
   "Get the twts from all feeds. Return: A list with the twts from all feeds."
+  (setq twtxt--my-profile (twtxt--get-my-profile)) ;; Refresh my twtxts
   (let ((twtxt--feeds nil))
     (dolist (follow (cdr (assoc 'follow twtxt--my-profile)))
       (let* ((feed (twtxt--get-feed (cdr (assoc 'url follow))))
