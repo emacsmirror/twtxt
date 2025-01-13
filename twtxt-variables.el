@@ -43,5 +43,8 @@
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
 (defconst twtxt--char-newline (char-to-string #x2028))
 
+;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
+(defconst twtxt--version 1.0)
+
 (provide 'twtxt-variables)
 ;;; twtxt-variables.el ends here

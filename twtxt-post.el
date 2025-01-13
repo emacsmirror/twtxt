@@ -39,7 +39,11 @@
 ;; which files you track.  The format is simple, human readable, and
 ;; integrates well with UNIX command line utilities.
 
+(require 'twtxt-variables)
+(require 'request)
+
 (defvar twtxt-post-tweet-hook nil)
+(defvar twtxt--mentions nil)
 
 (defun twtxt--get-datetime ()
   "Getting date and time according to RFC 3339 standard."
@@ -69,11 +73,13 @@
 				following))
           (selected-user (completing-read "Mention: " user-options nil t)))
      (when selected-user
+       (setq twtxt--mentions (cons (cdr (split-string selected-user " ")) twtxt--mentions))
        (insert "@<" selected-user "> "))))))
 
 
 (defun twtxt--post-buffer ()
   "Open a temporary buffer for writing and posting a new status update."
+  (setq twtxt--mentions nil)
   (let ((buffer-name "*Twtxt New Post*"))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
@@ -104,11 +110,21 @@
                        (point)))
          (post (buffer-substring-no-properties post-start (point-max))))
     (when (and post (not (string-blank-p post)))
+      ;; Add post to twtxt file
       (append-to-file
        (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
        nil
        twtxt-file)
+      ;; Run hook
       (run-hooks 'twtxt-post-tweet-hook)
+      ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
+      (dolist (mention-url twtxt--mentions)
+	(request
+	  mention-url
+	  :type "GET"
+	  :headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
+		     ("Content-Type" . "text/plain; charset=utf-8"))))
+      ;; Feedback
       (message "Posted: %s" post))
     (kill-buffer)))
 
