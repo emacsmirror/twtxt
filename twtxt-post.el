@@ -61,14 +61,15 @@
 (defun twtxt--insert-mention ()
   "Insert a mention in the format '@<nick url>' into the post buffer. Source: https://twtxt.dev/exts/twt-subject.html"
   (interactive)
-  (when (not twtxt-following)
-    (message "No users in the following list."))
-  (let* ((user-options (mapcar (lambda (item)
-                                 (concat (car item) " " (cadr item)))
-                               twtxt-following))
-         (selected-user (completing-read "Mention: " user-options nil t)))
-    (when selected-user
-      (insert "@<" selected-user "> "))))
+  (let ((following (cdr (assoc 'follow twtxt--my-profile))))
+    (if (not following)
+      (message "No users in the following list.")
+      (let* ((user-options (mapcar (lambda (user)
+                                  (concat (cdr (assoc 'name user)) " " (cdr (assoc 'url user))))
+				following))
+          (selected-user (completing-read "Mention: " user-options nil t)))
+     (when selected-user
+       (insert "@<" selected-user "> "))))))
 
 
 (defun twtxt--post-buffer ()
