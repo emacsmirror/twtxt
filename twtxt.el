@@ -48,6 +48,7 @@
 
 ;; Autoload
 (add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
+(require 'twtxt-variables)
 (require 'twtxt-post)
 (require 'twtxt-feed)
 (require 'twtxt-timeline)
@@ -55,12 +56,6 @@
 
 (defgroup twtxt nil
   "A twtxt client for Emacs."
-  :group 'twtxt)
-
-
-(defcustom twtxt-file "~/twtxt"
-  "Path to twtxt file."
-  :type 'file
   :group 'twtxt)
 
 (defun twtxt-open-file ()

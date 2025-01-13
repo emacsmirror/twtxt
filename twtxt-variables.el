@@ -39,6 +39,10 @@
 ;; which files you track.  The format is simple, human readable, and
 ;; integrates well with UNIX command line utilities.
 
+(defcustom twtxt-file "~/cloud/twtxt"
+  "Path to twtxt file."
+  :type 'file
+  :group 'twtxt)
 
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
 (defconst twtxt--char-newline (char-to-string #x2028))
