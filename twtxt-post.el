@@ -73,7 +73,7 @@
 				following))
           (selected-user (completing-read "Mention: " user-options nil t)))
      (when selected-user
-       (setq twtxt--mentions (cons (cdr (split-string selected-user " ")) twtxt--mentions))
+       (setq twtxt--mentions (cons (car (cdr (split-string selected-user " "))) twtxt--mentions))
        (insert "@<" selected-user "> "))))))
 
 
@@ -115,15 +115,15 @@
        (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
        nil
        twtxt-file)
-      ;; Run hook
-      (run-hooks 'twtxt-post-tweet-hook)
       ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
       (dolist (mention-url twtxt--mentions)
 	(request
-	 (car mention-url)
+	  mention-url
 	  :type "GET"
 	  :headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
 		     ("Content-Type" . "text/plain; charset=utf-8"))))
+      ;; Run hook
+      (run-hooks 'twtxt-post-tweet-hook)
       ;; Feedback
       (message "Posted: %s" post))
     (kill-buffer)))
