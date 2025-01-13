@@ -2,8 +2,7 @@
 
 ;; SPDX-License-Identifier: GPL-3.0
 
-;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
-;; Colaborator: Andros <https://andros.dev>
+;; Author: Andros <https://andros.dev>
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
