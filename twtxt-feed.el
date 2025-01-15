@@ -65,20 +65,26 @@
 ;;                (((id . 1) ;; The id of the twt, unique for each post
 ;; 		    (date . date) ;; The date of the twt
 ;; 		    (thread . "ohmmloa") ;; The thread id of the twt.
+;;                  (hash . "ohmmloa") ;; The hash of the twt.)))
 ;; 		    (text . "Hello, world!"))))) ;; The text of the twt
 
 
 (defun calculate-twtxt-hash (feed-url timestamp message)
-  "Calculate the twtxt hash using FEED-URL, TIMESTAMP and MESSAGE. Returns the resulting 8-character hash as a string. This is equivalent to running the following commands in the shell: ```printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8 ``` Source : https://twtxt.dev/exts/twt-hash.html ."
+  "Calculate the twtxt hash using FEED-URL, TIMESTAMP, and MESSAGE.
+Returns the resulting 8-character hash as a string. This Emacs Lisp
+implementation replicates the shell command:
+  printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8."
   (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
-         (hash (with-temp-buffer
-                 ;; Write the input to `printf` into the shell pipeline.
-                 (call-process-region input nil "sh" nil t nil "-c"
-                                      "printf '%s\n' \"$0\" \"$1\" \"$2\" | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8"
-                                      url timestamp message)
-                 ;; Return the result as a string.
-                 (buffer-string))))
-    (string-trim hash))) ;; Trim any trailing newlines or spaces.
+         (hash ""))
+    ;; Use a temporary buffer to pass input to the shell pipeline.
+    (with-temp-buffer
+      (insert input)
+      (call-process-region (point-min) (point-max) "sh" t t nil "-c"
+                           "b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8")
+      (setq hash (buffer-string)))
+    ;; Trim and return the resulting hash.
+    (string-trim hash)))
+
 
 (defun twtxt--get-value (feed key)
   "Extract a single or multiple values from a twtxt feed based on a KEY.
@@ -167,7 +173,8 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 (defun twtxt--get-twts-from-feed (feed)
   "Get the twts from a feed. Parameters: FEED (text). Return: A list with the twts from the feed: date and text."
-  (let* ((feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
+  (let* ((url (cdr (assoc 'url (twtxt--get-profile-from-feed feed))))
+	 (feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
 	 (feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-without-comments))
 	 (list-of-lines (split-string feed-without-empty-lines "\n"))
 	 (twts nil))
@@ -181,7 +188,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 		    (cons (list
 			   (cons 'id (gensym))
 			   (cons 'thread (twtxt--get-thread-id text))
-			   (cons 'hash (calculate-twtxt-hash (car)))
+			   (cons 'hash (calculate-twtxt-hash url (car columns) (cadr columns)))
 			   (cons 'date date)
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
