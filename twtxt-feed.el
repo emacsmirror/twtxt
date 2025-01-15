@@ -68,8 +68,8 @@
 ;; 		    (text . "Hello, world!"))))) ;; The text of the twt
 
 
-(defun compute-twtxt-hash (feed-url timestamp message)
-  "Computes the twtxt hash using FEED-URL, TIMESTAMP and MESSAGE. Returns the resulting 8-character hash as a string. This is equivalent to running the following commands in the shell: ```printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8 ``` Source : https://twtxt.dev/exts/twt-hash.html ."
+(defun calculate-twtxt-hash (feed-url timestamp message)
+  "Calculate the twtxt hash using FEED-URL, TIMESTAMP and MESSAGE. Returns the resulting 8-character hash as a string. This is equivalent to running the following commands in the shell: ```printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8 ``` Source : https://twtxt.dev/exts/twt-hash.html ."
   (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
          (hash (with-temp-buffer
                  ;; Write the input to `printf` into the shell pipeline.
@@ -181,6 +181,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 		    (cons (list
 			   (cons 'id (gensym))
 			   (cons 'thread (twtxt--get-thread-id text))
+			   (cons 'hash (calculate-twtxt-hash (car)))
 			   (cons 'date date)
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
