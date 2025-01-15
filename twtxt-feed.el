@@ -62,10 +62,23 @@
 ;; (follow . (((name . "Bar") (url . ("http://example.com/twtxt.txt"))))) ;; The users that the user follows
 ;; (link . (((name . "Blog") (url . "http://example.com/blog")) (name . "GitHub") (url . "https://github.com/username"))) ;; The links of the user
 ;; (twts . ;; The twts of the user
-;;                (((id . 1) ;; The id of the tweet, unique for each post
-;; 		    (date . date) ;; The date of the tweet
-;; 		    (thread . "ohmmloa") ;; The thread id of the tweet. Or nil if it doesn't have a thread id.
-;; 		    (text . "Hello, world!"))))) ;; The text of the tweet
+;;                (((id . 1) ;; The id of the twt, unique for each post
+;; 		    (date . date) ;; The date of the twt
+;; 		    (thread . "ohmmloa") ;; The thread id of the twt.
+;; 		    (text . "Hello, world!"))))) ;; The text of the twt
+
+
+(defun compute-twtxt-hash (feed-url timestamp message)
+  "Computes the twtxt hash using FEED-URL, TIMESTAMP and MESSAGE. Returns the resulting 8-character hash as a string. This is equivalent to running the following commands in the shell: ```printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8 ``` Source : https://twtxt.dev/exts/twt-hash.html ."
+  (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
+         (hash (with-temp-buffer
+                 ;; Write the input to `printf` into the shell pipeline.
+                 (call-process-region input nil "sh" nil t nil "-c"
+                                      "printf '%s\n' \"$0\" \"$1\" \"$2\" | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8"
+                                      url timestamp message)
+                 ;; Return the result as a string.
+                 (buffer-string))))
+    (string-trim hash))) ;; Trim any trailing newlines or spaces.
 
 (defun twtxt--get-value (feed key)
   "Extract a single or multiple values from a twtxt feed based on a KEY.
@@ -199,7 +212,7 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
   "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date with the structure: (id author-id date text)."
   (let* ((timeline (mapcan (lambda (feed)
                              (let ((author-id (cdr (assoc 'id feed))) ;; Get author ID once
-                                   (twts (cdr (assoc 'twts feed)))) ;; Get tweets
+                                   (twts (cdr (assoc 'twts feed)))) ;; Get twts
                                (mapcar (lambda (twt)
                                          (list
                                           (cons 'id (cdr (assoc 'id twt)))
