@@ -49,6 +49,9 @@
 			       (insert-file-contents twtxt-feed-example-file)
 			       (buffer-string)))
 
+(ert-deftest test-twtxt--calculate-hash ()
+  (should (string= (twtxt--calculate-hash "https://example.com/twtxt.txt" "2024-09-29T13:30:00Z" "Hello World!") "ohmmloa")))
+
 (ert-deftest test-twtxt--get-value ()
   (should (string= "foo" (twtxt--get-value twtxt-feed-example "nick")))
   (let ((urls (twtxt--get-value twtxt-feed-example "url"))

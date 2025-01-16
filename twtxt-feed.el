@@ -221,7 +221,6 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
     (run-hooks 'twtxt-after-fetch-posts-hook)
     twtxt--feeds))
 
-
 (defun twtxt--normalize-date (date)
   "Normalize DATE by replacing `nil` values in `parse-time-string` with defaults.
 DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
