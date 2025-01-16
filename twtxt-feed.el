@@ -69,21 +69,32 @@
 ;; 		    (text . "Hello, world!"))))) ;; The text of the twt
 
 
-(defun calculate-twtxt-hash (feed-url timestamp message)
+(defun twtxt--check-required-commands ()
+  "Check if the following commands are installed: b2sum, awk, xxd, base32, tr, and tail. Return t if you have all the commands, otherwise return nil."
+  (let ((commands '("b2sum" "awk" "xxd" "base32" "tr" "tail"))
+        (missing-commands nil))
+    (dolist (cmd commands)
+      (unless (executable-find cmd)
+        (push cmd missing-commands)))
+    (not missing-commands)))
+
+
+(defun twtxt--calculate-hash (feed-url timestamp message)
   "Calculate the twtxt hash using FEED-URL, TIMESTAMP, and MESSAGE.
 Returns the resulting 8-character hash as a string. This Emacs Lisp
 implementation replicates the shell command:
   printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8."
-  (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
-         (hash ""))
-    ;; Use a temporary buffer to pass input to the shell pipeline.
-    (with-temp-buffer
-      (insert input)
-      (call-process-region (point-min) (point-max) "sh" t t nil "-c"
-                           "b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8")
-      (setq hash (buffer-string)))
-    ;; Trim and return the resulting hash.
-    (string-trim hash)))
+  (when (twtxt--check-required-commands)
+    (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
+	   (hash ""))
+      ;; Use a temporary buffer to pass input to the shell pipeline.
+      (with-temp-buffer
+	(insert input)
+	(call-process-region (point-min) (point-max) "sh" t t nil "-c"
+			     "b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8")
+	(setq hash (buffer-string)))
+      ;; Trim and return the resulting hash.
+      (string-trim hash))))
 
 
 (defun twtxt--get-value (feed key)
@@ -188,7 +199,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 		    (cons (list
 			   (cons 'id (gensym))
 			   (cons 'thread (twtxt--get-thread-id text))
-			   (cons 'hash (calculate-twtxt-hash url (car columns) (cadr columns)))
+			   (cons 'hash (twtxt--calculate-hash url (car columns) (cadr columns)))
 			   (cons 'date date)
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
