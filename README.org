@@ -57,7 +57,22 @@ You should add your followers to the ~twtxt-file~.
 # follower = user2 https://example-2.org/twtxt.txt
 #+END_SRC
 
-You can read more about the ~follower~ specification in the [[extension][https://twtxt.dev/exts/metadata.html#follow]].
+You can read more about the ~threads~ specification in the [[https://twtxt.dev/#mentions-and-threads][extension]].
+
+* replies
+
+optionally, if you want to replicate a post, you need to install the following unix tools:
+
+- ~b2sum~
+- ~awk~
+- ~xxd~
+- ~base32~
+- ~tr~
+- ~tail~
+
+otherwise you will only be able to replicate existing threads, not create them.
+
+you can read more about the ~follower~ specification in the [[https://twtxt.dev/exts/metadata.html#follow][extension]].
 
 * Usage
 
