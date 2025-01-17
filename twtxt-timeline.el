@@ -76,6 +76,18 @@
 	  (put-image (create-image data nil t :width width) pos))
       (kill-buffer buffer))))
 
+(defun imagesp (txt)
+  "Check if TXT contains an image."
+  (string-match-p "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" txt))
+
+(defun get-images-urls (txt)
+  "Get all images URLs from TXT."
+  (let ((urls '()))
+    (while (string-match "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" txt)
+      (push (match-string 0 txt) urls)
+      (setq txt (replace-match "" nil nil txt)))
+    urls))
+
 ;; Layout
 (defun twtxt--timeline-layout ()
   "Create the main layout for the welcome screen."
@@ -89,7 +101,7 @@
   (widget-insert "\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt-post-buffer))
+			   (twtxt--post-buffer))
 		 :help-echo "Publish a new twtxt post."
 		 " ＋ New post ")
   (widget-insert " ")
@@ -97,6 +109,11 @@
 		 :notify (lambda (&rest ignore)
 			   (twtxt-timeline))
 		 " ↺ Refresh timeline ")
+  (widget-insert " ")
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
+			   (twtxt-timeline))
+		 " 🖼 Show profile ")
   (widget-insert "\n\n")
   (widget-insert twtxt--timeline-separator)
   (widget-insert "\n\n")
@@ -112,6 +129,12 @@
 	   (text (cdr (assoc 'text twts))))
       ;; text
       (widget-insert text)
+      (when (imagesp text) (progn
+			     (widget-insert "\n\n")
+			     (dolist (url (get-images-urls text))
+			       (progn
+				 (put-image-from-url url (line-number-at-pos) 200)
+				 (widget-insert "  ")))))
       (widget-insert "\n\n")
       ;; avatar
       (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
