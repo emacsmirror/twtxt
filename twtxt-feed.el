@@ -43,15 +43,18 @@
 ;;; Code:
 (require 'twtxt-variables)
 (require 'request)
-(require 'async)
 (require 'seq)
 
 ;; Hooks
 (defvar twtxt-after-fetch-posts-hook nil)
+(defvar twtxt-queue-update-hook nil)
+(defvar twtxt-queue-finished-hook nil)
 
 ;; Variables
-(defvar twtxt--my-profile nil)
+(defconst twtxt--queue-status '(:pending :processing :done :error)) ;; Possible statuses for an item in the queue
 (defvar twtxt--feeds nil)
+(defvar twtxt-queue nil)
+(defvar twtxt--my-profile nil)
 
 ;; Example of structure with Metadata Extension: https://twtxt.dev/exts/metadata.html
 ;; '((id . 1) ;; The id of the user, unique for each user
@@ -68,6 +71,49 @@
 ;;                  (hash . "ohmmloa") ;; The hash of the twt.)))
 ;; 		    (text . "Hello, world!"))))) ;; The text of the twt
 
+(defun twtxt--queue-update-status-by-url (queue url new-status)
+  "Update the status of the item in the queue with the given URL to the new status. Return the updated queue."
+  (let ((item (cl-find-if (lambda (i) (string= (cdr (assoc 'url i)) url)) queue)))
+    (when item
+      (setf (cdr (assoc 'status item)) new-status)))
+  queue)
+
+(defun twtxt--queue-update-response-by-url (queue url new-response)
+"Update the response of the item in the queue with the given URL to the new response. Return the updated queue."
+  (let ((item (cl-find-if (lambda (i) (string= (cdr (assoc 'url i)) url)) queue)))
+    (when item
+      (setf (cdr (assoc 'response item)) new-response)))
+  queue)
+
+(defun twtxt--initialize-queue ()
+  "Prepare the queue with the feeds to download. The queue is a list of items with the following structure: ((url . \"http://example.com/twtxt.txt\") (status . :pending) (response . nil))."
+  (setq twtxt-queue
+        (mapcar (lambda (follow)
+                  `((url . ,(cdr (assoc 'url follow)))
+                    (status . :pending)
+                    (response . nil)))
+                (cdr (assoc 'follow twtxt--my-profile)))))
+
+(defun twtxt--process-queue ()
+  "Process the queue by downloading the feeds."
+  (dolist (item twtxt-queue)
+    (let ((url (cdr (assoc 'url item))))
+      (request url
+        :timeout 5
+	:success (cl-function
+                  (lambda (&key data &allow-other-keys)
+		    (message url)
+		    (setq twtxt-queue (twtxt--queue-update-status-by-url twtxt-queue url :done)) ;; Update status
+                    (setq twtxt-queue (twtxt--queue-update-response-by-url twtxt-queue url data)) ;; Update response
+                    (run-hooks 'twtxt-queue-update-hook)))
+        :error (lambda (&rest _)
+                 (setq twtxt-queue (twtxt--queue-update-status-by-url twtxt-queue url :error))
+                 (run-hooks 'twtxt-queue-update-hook))))))
+
+(defun twtxt--fetch-all-feeds-async ()
+  "Fetch all feeds asynchronously."
+  (twtxt--initialize-queue)
+  (twtxt--process-queue))
 
 (defun twtxt--check-required-commands ()
   "Check if the following commands are installed: b2sum, awk, xxd, base32, tr, and tail. Return t if you have all the commands, otherwise return nil."
@@ -204,23 +250,6 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
 
-(defun twtxt--get-twts-from-all-feeds ()
-  "Get the twts from all feeds. Return: A list with the twts from all feeds."
-  (setq twtxt--my-profile (twtxt--get-my-profile)) ;; Refresh my twtxts
-  (let ((twtxt--feeds nil))
-    (dolist (follow (cdr (assoc 'follow twtxt--my-profile)))
-      (let* ((feed (twtxt--get-feed (cdr (assoc 'url follow))))
-	     (profile (twtxt--get-profile-from-feed feed))
-	     (twts (twtxt--get-twts-from-feed feed))
-	     (user (append profile (list (cons 'twts twts)))))
-	(setq twtxt--feeds (cons user twtxt--feeds))
-	(message "Got twts from %s" (cdr (assoc 'nick profile)))))
-    ;; Add my profile to the list of feeds
-    (setq twtxt--feeds (cons twtxt--my-profile twtxt--feeds))
-    (message "Finished!")
-    (run-hooks 'twtxt-after-fetch-posts-hook)
-    twtxt--feeds))
-
 (defun twtxt--normalize-date (date)
   "Normalize DATE by replacing `nil` values in `parse-time-string` with defaults.
 DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
@@ -254,6 +283,33 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
+
+(add-hook 'twtxt-queue-update-hook
+          (lambda ()
+	    (message "Queue update")
+	    ;; Check if the queue is done
+	    (let ((in-progress (seq-filter
+                                (lambda (i) (not (eq (cdr (assoc 'status i)) :done)))
+                                twtxt-queue)))
+              (when (not in-progress)
+		(message in-progress)
+		(run-hooks 'twtxt-queue-finished-hook)))))
+
+(add-hook 'twtxt-queue-finished-hook
+	  (lambda ()
+	    (message "Queue finished.")
+	    ;; Remove twtxt-queue with status :error
+	    (setq twtxt-queue (seq-filter (lambda (i) (not (eq (cdr (assoc 'status i)) :error))) twtxt-queue))
+	    ;; Process the feeds
+	    (setq twtxt--feeds
+                  (mapcar (lambda (item)
+                            (let* ((feed (cdr (assoc 'response item)))
+                                   (profile (twtxt--get-profile-from-feed feed))
+                                   (twts (twtxt--get-twts-from-feed feed)))
+                              (append profile (list (cons 'twts twts)))))
+                          twtxt-queue))
+	    (debug twtxt--feeds)
+	    (run-hooks 'twtxt-after-fetch-posts-hook)))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
