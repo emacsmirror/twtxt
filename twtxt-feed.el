@@ -48,7 +48,6 @@
 ;; Hooks
 (defvar twtxt-after-fetch-posts-hook nil)
 (defvar twtxt-queue-update-hook nil)
-(defvar twtxt-queue-finished-hook nil)
 
 ;; Variables
 (defconst twtxt--queue-status '(:pending :processing :done :error)) ;; Possible statuses for an item in the queue
@@ -102,13 +101,15 @@
         :timeout 5
 	:success (cl-function
                   (lambda (&key data &allow-other-keys)
-		    (message url)
 		    (setq twtxt-queue (twtxt--queue-update-status-by-url twtxt-queue url :done)) ;; Update status
                     (setq twtxt-queue (twtxt--queue-update-response-by-url twtxt-queue url data)) ;; Update response
-                    (run-hooks 'twtxt-queue-update-hook)))
+		    (message "Downloaded feed: %s" url)
+		    ;; (twtxt--check-queue)
+		    ))
         :error (lambda (&rest _)
                  (setq twtxt-queue (twtxt--queue-update-status-by-url twtxt-queue url :error))
-                 (run-hooks 'twtxt-queue-update-hook))))))
+		 (twtxt--check-queue)
+		 )))))
 
 (defun twtxt--fetch-all-feeds-async ()
   "Fetch all feeds asynchronously."
@@ -188,19 +189,6 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 (defun twtxt--clean-thread-id (text)
   "Clean the thread id from TEXT. For example: '2024-09-29T13:40:00Z   (#ohmmloa) Is anyone alive?' return '2024-09-29T13:40:00Z   Is anyone alive?'."
   (replace-regexp-in-string "(#\\w+) *" "" text))
-
-(defun twtxt--get-feed (url)
-  "Get the feed, text, from URL."
-  (let ((feed nil))
-    (request url
-      :sync t
-      :timeout 5
-      :success (cl-function
-		(lambda (&key data &allow-other-keys)
-		  (setq feed data)))
-      :error (cl-function
-	      (lambda (&key error-thrown &allow-other-keys))))
-    feed))
 
 (defun twtxt--get-my-profile (&optional custom-twtxt-file)
   "Get the profile of the user from the feed (path: twtxt-file). Parameters: CUSTOM-TWTXT-FILE (string) Optional. Return: A list with the profile of the user."
@@ -284,32 +272,29 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
 
-(add-hook 'twtxt-queue-update-hook
-          (lambda ()
-	    (message "Queue update")
-	    ;; Check if the queue is done
-	    (let ((in-progress (seq-filter
-                                (lambda (i) (not (eq (cdr (assoc 'status i)) :done)))
-                                twtxt-queue)))
-              (when (not in-progress)
-		(message in-progress)
-		(run-hooks 'twtxt-queue-finished-hook)))))
-
-(add-hook 'twtxt-queue-finished-hook
-	  (lambda ()
-	    (message "Queue finished.")
-	    ;; Remove twtxt-queue with status :error
-	    (setq twtxt-queue (seq-filter (lambda (i) (not (eq (cdr (assoc 'status i)) :error))) twtxt-queue))
-	    ;; Process the feeds
-	    (setq twtxt--feeds
-                  (mapcar (lambda (item)
-                            (let* ((feed (cdr (assoc 'response item)))
-                                   (profile (twtxt--get-profile-from-feed feed))
-                                   (twts (twtxt--get-twts-from-feed feed)))
-                              (append profile (list (cons 'twts twts)))))
-                          twtxt-queue))
-	    (debug twtxt--feeds)
-	    (run-hooks 'twtxt-after-fetch-posts-hook)))
+(defun twtxt--check-queue ()
+  (message "Queue update")
+  ;; Check if the queue is done
+  (let ((in-progress (seq-filter
+                      (lambda (i) (or
+				   (eq (cdr (assoc 'status i)) :processing)
+				   (eq (cdr (assoc 'status i)) :pending)))
+                      twtxt-queue)))
+    (message "Queue in progress: %s" (length in-progress))
+    (when (length= in-progress 0)
+      ;; Remove twtxt-queue with status :error
+      (setq twtxt-queue (seq-filter (lambda (i) (not (eq (cdr (assoc 'status i)) :error))) twtxt-queue))
+      ;; Process the feeds
+      (setq twtxt--feeds
+	    (mapcar (lambda (item)
+		      (let* ((feed (cdr (assoc 'response item)))
+			     (profile (twtxt--get-profile-from-feed feed))
+			     (twts (twtxt--get-twts-from-feed feed)))
+			(append profile (list (cons 'twts twts)))))
+		    twtxt-queue))
+      (message "Queue finished.")
+      (run-hooks 'twtxt-after-fetch-posts-hook)
+      )))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
