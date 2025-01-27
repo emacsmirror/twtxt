@@ -1,10 +1,9 @@
-;;; twtxt.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
+;;; twtxt-variables.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
 
 ;; SPDX-License-Identifier: GPL-3.0
 
-;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
-;; Colaborator: Andros - https://andros.dev
-;; Version: 0.2
+;; Author: Andros <https://andros.dev>
+;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
 
@@ -40,42 +39,16 @@
 ;; which files you track.  The format is simple, human readable, and
 ;; integrates well with UNIX command line utilities.
 
-;; Usage:
-;; View your timeline `M-x twtxt-timeline`
-;; Post a status update `M-x twtxt-post`
-
-;;; Code:
-
-;; Autoload
-(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
-(require 'twtxt-variables)
-(require 'twtxt-post)
-(require 'twtxt-feed)
-(require 'twtxt-timeline)
-(require 'cl-lib)
-
-(defgroup twtxt nil
-  "A twtxt client for Emacs."
+(defcustom twtxt-file "~/twtxt.txt"
+  "Path to twtxt file."
+  :type 'file
   :group 'twtxt)
 
-(defun twtxt-open-file ()
-  "Open twtxt file."
-  (interactive)
-  (find-file twtxt-file))
+;; Multiline Extension: https://twtxt.dev/exts/multiline.html
+(defconst twtxt--char-newline (char-to-string #x2028))
 
+;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
+(defconst twtxt--version 1.0)
 
-(defun twtxt-timeline ()
-  "View your timeline."
-  (interactive)
-  (setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
-  (setq twtxt--twtxts-page 1)
-  (twtxt--timeline-layout))
-
-
-(defun twtxt-post ()
-  "POST a status update."
-  (interactive)
-  (twtxt--post-buffer))
-
-(provide 'twtxt)
-;;; twtxt.el ends here
+(provide 'twtxt-variables)
+;;; twtxt-variables.el ends here

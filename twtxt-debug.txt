@@ -1,0 +1,24 @@
+# Learn more about twtxt:
+#     https://twtxt.readthedocs.io/en/stable/
+#
+# nick = foo
+#url = https://foo.com
+# url =http://blog.bar.com
+#   url= gemini://baz.com
+#avatar=https://foo.com/avatar.jpg
+# link= Website https://my-website.com
+#follow = andros https://twtxt.andros.dev
+#following= 8
+#  follow= prologic https://twtxt.net/user/prologic/twtxt.txt
+#      DEScripTION= Full-Stack developer Emacs addicted ðŸ± Cat food opening
+#
+#   link   =   My blog http://blog.mi-website.com
+# Legacy, don't use:
+#nick_alias = vain
+
+2024-12-18T14:18:26+01:00	Hi Twtxt
+2024-12-18T14:54:56+01:00	I like it
+2024-12-23T08:33:19+01:00	Thanks @<bender https://twtxt.net/user/bender/twtxt.txt> for the feedback.
+
+2024-12-23T08:49:02+01:00	(#hsyv65q) Hello everyone! ðŸ˜
+2024-12-23T10:00:59+01:00	Thanks @<prologic https://twtxt.net/user/prologic/twtxt.txt> !

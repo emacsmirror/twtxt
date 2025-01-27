@@ -1,0 +1,40 @@
+* Core
+
+** IN PROGRESS Asynchronous system to get all feeds
+
+* Timeline
+
+** IN PROGRESS New timeline
+** TODO Show images
+** TODO Render threads
+** TODO Add a new post to the timeline with a reply
+** TODO Follow/unfollow users button
+** TODO Edit post button
+
+* Feed
+
+** TODO Manage subscriptions: follow/unfollow
+** TODO Update configuration with form: name, description, avatar, urls...
+
+* Profile
+
+** TODO Show profile
+
+* Extensions
+
+** TODO Twt Hash Extension in combination with Twt Subject Extension for forming conversation trees
+** DONE Multiline Extension for writing longer twts with paragraphs
+** DONE User-Agent Extension for discovering feeds with multi-user clients
+** TODO Archive Feeds Extension for archiving and rotating long feeds
+** DONE Metadata Extension for additional feed metadata like description
+** WAITING WebFinger Extension for looking up URL for a feed using @nick@domain syntax
+
+* Mentions
+
+** TODO Check mentions
+
+* Search
+
+** TODO Search tags
+** TODO Search mentions
+** TODO Search users
