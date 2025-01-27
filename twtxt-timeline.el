@@ -42,6 +42,7 @@
 
 ;;; Code:
 (require 'twtxt-feed)
+(require 'twtxt-image)
 (require 'widget)
 (require 'url)
 (require 'cl-lib)
@@ -58,35 +59,6 @@
    (window-width) ?\u2500))
 
 ;; Functions
-(defun put-image-from-url (url pos &optional width)
-  "Put an image from an URL in the buffer at position."
-  (unless url (setq url (url-get-url-at-point)))
-  (unless url
-    (error "Couldn't find URL."))
-  (let ((buffer (url-retrieve-synchronously url)))
-    (unwind-protect
-        (let ((data (with-current-buffer buffer
-                      (goto-char (point-min))
-                      (search-forward "\n\n")
-                      (buffer-substring (point) (point-max)))))
-	  (save-excursion
-            (goto-char (point-min))
-            (forward-line (1- pos)) ; Go to the beginning of the specified line
-            (setq pos (line-beginning-position)))
-	  (put-image (create-image data nil t :width width) pos))
-      (kill-buffer buffer))))
-
-(defun imagesp (txt)
-  "Check if TXT contains an image."
-  (string-match-p "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" txt))
-
-(defun get-images-urls (txt)
-  "Get all images URLs from TXT."
-  (let ((urls '()))
-    (while (string-match "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" txt)
-      (push (match-string 0 txt) urls)
-      (setq txt (replace-match "" nil nil txt)))
-    urls))
 
 ;; Layout
 (defun twtxt--timeline-layout ()
@@ -129,15 +101,15 @@
 	   (text (cdr (assoc 'text twts))))
       ;; text
       (widget-insert text)
-      (when (imagesp text) (progn
+      (when (image-p text) (progn
 			     (widget-insert "\n\n")
 			     (dolist (url (get-images-urls text))
 			       (progn
-				 (put-image-from-url url (line-number-at-pos) 200)
+				 (put-image-from-cache url (line-number-at-pos) 200)
 				 (widget-insert "  ")))))
       (widget-insert "\n\n")
       ;; avatar
-      (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
+      (when avatar-url (put-image-from-cache avatar-url (line-number-at-pos) 50))
       ;; nick + date
       (widget-insert (concat "  " nick " - " date " "))
       (if thead (widget-create 'push-button

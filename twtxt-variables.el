@@ -44,6 +44,11 @@
   :type 'file
   :group 'twtxt)
 
+(defcustom twtxt-cache-image-directory "~/.twtxt-cache/"
+  "Path to twtxt image cache directory."
+  :type 'directory
+  :group 'twtxt)
+
 ;; Multiline Extension: https://twtxt.dev/exts/multiline.html
 (defconst twtxt--char-newline (char-to-string #x2028))
 

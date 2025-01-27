@@ -282,7 +282,7 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 				   (eq (cdr (assoc :status i)) :processing)
 				   (eq (cdr (assoc :status i)) :pending)))
                       twtxt-queue)))
-    (message "Queue in progress: %s" (length in-progress))
+    (message "Feeding in progress: %s" (if (< 0 (length in-progress)) (length in-progress) "Downloading images..."))
     (when (length= in-progress 0)
       ;; Remove twtxt-queue with status :error
       (setq twtxt-queue (seq-filter (lambda (i) (not (eq (cdr (assoc :status i)) :error))) twtxt-queue))
@@ -294,7 +294,7 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 			     (twts (twtxt--get-twts-from-feed feed)))
 			(append profile (list (cons 'twts twts)))))
 		    twtxt-queue))
-      (message "Queue finished.")
+      (message "Feeding completed!")
       (run-hooks 'twtxt-after-fetch-posts-hook))))
 
 (provide 'twtxt-feed)
