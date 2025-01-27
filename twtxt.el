@@ -67,9 +67,10 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
-  (setq twtxt--feeds (twtxt--get-twts-from-all-feeds))
-  (setq twtxt--twtxts-page 1)
-  (twtxt--timeline-layout))
+  (twtxt--fetch-all-feeds-async)
+  (add-hook 'twtxt-after-fetch-posts-hook (lambda ()
+					    (setq twtxt--twtxts-page 1)
+					 (twtxt--timeline-layout)) nil t))
 
 
 (defun twtxt-post ()
