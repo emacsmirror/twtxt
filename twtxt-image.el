@@ -41,12 +41,14 @@
 
 (require 'twtxt-variables)
 
+(defconst twtxt--regex-image "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\)")
+
 (defun twtxt--cache-image-p (url)
   "Check if an image from URL is already cached. It is cached if it is in `twtxt-cache-image-directory' as a base64 encoded string of the URL."
-  (file-exists-p (expand-file-name (base64-encode-string url) twtxt-cache-image-directory)))
+  (file-exists-p (expand-file-name (base64-encode-string url :no-line-break) twtxt-cache-image-directory)))
 
 (defun twtxt--cache-image (url)
-  "Download an image from URL to cache."
+  "Download an image from URL to cache (file system)."
   (unless (file-exists-p twtxt-cache-image-directory)
     (make-directory twtxt-cache-image-directory t))
   (request
@@ -56,27 +58,20 @@
     :parser 'buffer-string
     :success (cl-function
 	      (lambda (&key data &allow-other-keys)
-		(let ((filename-image (base64-encode-string url)))
+		(let ((filename-image (base64-encode-string url :no-line-break)))
 		  (with-temp-file (expand-file-name filename-image twtxt-cache-image-directory)
 		    (set-buffer-file-coding-system 'binary)
 		    (insert data)))))))
 
 (defun image-p (text)
   "Check if TXT contains an image."
-  (string-match-p "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" text))
-
-;; (defun get-images-urls (text)
-;;   "Get all images URLs from TEXT."
-;;   (let ((urls '()))
-;;     (while (image-p text)
-;;       (push (match-string 0 text) urls))
-;;     urls))
+  (string-match-p twtxt--regex-image text))
 
 (defun get-images-urls (text)
   "Get all image URLs from TEXT."
   (let ((urls '())
         (pos 0))
-    (while (string-match "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\)" text pos)
+    (while (string-match twtxt--regex-image text pos)
       (push (match-string 0 text) urls)
       (setq pos (match-end 0))) ;; Avanza el cursor para evitar procesar el mismo texto
     urls))
