@@ -68,16 +68,13 @@
 
 (defun twtxt--clear-txts ()
   "Clear the list of twtxts."
-  (let ((line-from-twtxt 5))
-    (when (>= (line-number-at-pos (point-max)) line-from-twtxt)
-      (let ((inhibit-read-only t))
-	;; Delete inserts: From line line-from-twtxt to the end
-	(goto-line line-from-twtxt)
-	(delete-region (point) (point-max))
-	;; Delete old widgets
-	(dolist (widget-item twtxt--widgets)
-	  (widget-delete widget-item))
-	(setq twtxt--widgets '())))))
+  (goto-char (point-min))
+  ;; Delete old widgets
+  (dolist (widget-item twtxt--widgets)
+    (when (and widget-item (widget-at widget-item)) ;; Check if widget exists
+      (ignore-errors
+        (widget-delete widget-item)))
+  (setq twtxt--widgets '())))
 
 (defun twtxt--previous-page ()
   "Go to the previous page of twtxts."
@@ -91,8 +88,9 @@
 
 (defun twtxt--redraw-timeline ()
   "Redraw the timeline."
+  (twtxt-recalculate-timeline-separator)
   (twtxt--clear-txts)
-  ;; twtxts
+  ;; List twtxts
   (dolist (twts (cl-subseq (twtxt--timeline)
 			   (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 			   (* twtxt--twtxts-page twtxt--twtxts-per-page)))
@@ -103,39 +101,37 @@
 	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twts)))))
 	   (text (cdr (assoc 'text twts))))
       ;; text
-      (widget-insert text)
+      (widget-create-and-add 'item text)
       (when (image-p text) (progn
-			     (widget-insert "\n\n")
+			     (widget-create-and-add 'item "\n\n")
 			     (dolist (url (get-images-urls text))
 			       (progn
 				 (put-image-from-cache url (line-number-at-pos) 200)
-				 (widget-insert "  ")))))
-      (widget-insert "\n\n")
+				 (widget-create-and-add 'item "  ")))))
+      (widget-create-and-add 'item "\n\n")
       ;; avatar
       (when avatar-url (put-image-from-cache avatar-url (line-number-at-pos) 50))
       ;; nick + date
-      (widget-insert (concat "  " nick " - " date " "))
+      (widget-create-and-add 'item (concat "  " nick " - " date " "))
       (if thead (widget-create-and-add 'push-button
 				       :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
 				       "Go to thread") (widget-create-and-add 'push-button " ↳ Reply "))
       ;; Separator
-      (widget-insert "\n")
-      (widget-insert twtxt--timeline-separator)
-      (widget-insert "\n")))
+      (widget-create-and-add 'item "\n")
+      (widget-create-and-add 'item twtxt--timeline-separator)
+      (widget-create-and-add 'item "\n")))
   ;; Navigation
-  (widget-insert "\n")
+  (widget-create-and-add 'item "\n")
   (widget-create-and-add 'push-button
 		 :notify (lambda (&rest ignore)
 			     (twtxt--next-page))
 		 " Next page → ")
-  (widget-insert "\n\n")
+  (widget-create-and-add 'item "\n\n")
   (when (> twtxt--twtxts-page 1)
     (widget-create-and-add 'push-button
 		   :notify (lambda (&rest ignore)
 			     (twtxt--previous-page))
-		   " ← Previous page "))
-
-  )
+		   " ← Previous page ")))
 
 ;; Macros
 (defmacro widget-create-and-add (&rest body)
