@@ -63,7 +63,7 @@
 		    (set-buffer-file-coding-system 'binary)
 		    (insert data)))))))
 
-(defun image-p (text)
+(defun twtxt--image-p (text)
   "Check if TXT contains an image."
   (string-match-p twtxt--regex-image text))
 
@@ -76,13 +76,18 @@
       (setq pos (match-end 0))) ;; Avanza el cursor para evitar procesar el mismo texto
     urls))
 
-
-(defun put-image-from-cache (url pos &optional width)
+(defun twtxt--put-image-from-cache (url pos &optional width)
   "Put an image from cache at URL at POS."
   (unless (twtxt--cache-image-p url)
     (twtxt--cache-image url))
   (let ((image (base64-encode-string url)))
     (insert-image (create-image (expand-file-name image twtxt-cache-image-directory) nil nil :width width) pos)))
+
+(defun twtxt--clean-images ()
+  "Remove all images from the buffer."
+  (remove-images (point-min) (point-max))
+
+)
 
 (provide 'twtxt-image)
 ;;; twtxt-variables.el ends here
