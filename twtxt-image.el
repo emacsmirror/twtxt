@@ -85,6 +85,7 @@
 
 (defun twtxt--clean-images ()
   "Remove all images from the buffer."
+  (inhibit-read-only t)
   (remove-images (point-min) (point-max))
 
 )

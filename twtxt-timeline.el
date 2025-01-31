@@ -79,14 +79,17 @@
   (interactive)
   (let ((separator (concat "^" (regexp-quote twtxt--timeline-separator) "$")))
     (when (search-forward-regexp separator nil t)
-      (beginning-of-line))))
+      (beginning-of-line)))
+  (forward-line 1))
 
 (defun twtxt--goto-previous-separator ()
   "Go to the previous separator in the buffer."
   (interactive)
   (let ((separator (concat "^" (regexp-quote twtxt--timeline-separator) "$")))
+    (search-backward-regexp separator nil t)
     (when (search-backward-regexp separator nil t)
-      (beginning-of-line))))
+      (beginning-of-line)))
+  (forward-line 1))
 
 (defun twtxt-recalculate-timeline-separator ()
   "Recalculate the timeline separator."
@@ -197,8 +200,7 @@
   (switch-to-buffer twtxt--timeline-name-buffer)
   (kill-all-local-variables)
   ;; Delete old widgets
-  (let ((inhibit-read-only t))
-    (erase-buffer))
+  (inhibit-read-only t)
   (remove-overlays)
   ;; Layouts
   (twtxt-recalculate-timeline-separator)
@@ -217,6 +219,7 @@
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   ;; Go to the top of the buffer
   (widget-setup)
+  (read-only-mode 1)
   (widget-forward 1))
 
 (provide 'twtxt-timeline)
