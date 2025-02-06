@@ -40,6 +40,8 @@
 ;; integrates well with UNIX command line utilities.
 
 (require 'twtxt-variables)
+(require 'widget)
+(require 'wid-edit)
 
 (defconst twtxt--regex-image "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\)")
 
@@ -73,7 +75,7 @@
         (pos 0))
     (while (string-match twtxt--regex-image text pos)
       (push (match-string 0 text) urls)
-      (setq pos (match-end 0))) ;; Avanza el cursor para evitar procesar el mismo texto
+      (setq pos (match-end 0)))
     urls))
 
 (defun twtxt--put-image-from-cache (url pos &optional width)
@@ -81,14 +83,13 @@
   (unless (twtxt--cache-image-p url)
     (twtxt--cache-image url))
   (let ((image (base64-encode-string url)))
-    (insert-image (create-image (expand-file-name image twtxt-cache-image-directory) nil nil :width width) pos)))
+    ;; (insert-image (create-image (expand-file-name image twtxt-cache-image-directory) nil nil :width width) pos)
+    ))
 
 (defun twtxt--clean-images ()
   "Remove all images from the buffer."
-  (inhibit-read-only t)
-  (remove-images (point-min) (point-max))
-
-)
+  ;; (remove-images (point-min) (point-max))
+  )
 
 (provide 'twtxt-image)
 ;;; twtxt-variables.el ends here

@@ -44,11 +44,9 @@
 (require 'twtxt-feed)
 (require 'twtxt-image)
 (require 'widget)
+(require 'wid-edit)
 (require 'url)
 (require 'cl-lib)
-
-(eval-when-compile
-  (require 'wid-edit))
 
 ;; Variables
 (defvar twtxt--widgets '())
@@ -109,15 +107,19 @@
 
 (defun twtxt--previous-page ()
   "Go to the previous page of twtxts."
-  (setq twtxt--twtxts-page (1- twtxt--twtxts-page))
-  (twtxt--redraw-timeline)
-  (twtxt--redraw-navigator))
+  (when (> twtxt--twtxts-page 1)
+      (setq twtxt--twtxts-page (1- twtxt--twtxts-page))
+      (twtxt--redraw-timeline)
+      (twtxt--redraw-navigator)
+      (goto-char (point-min))))
 
 (defun twtxt--next-page ()
   "Go to the next page of twtxts."
-  (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-  (twtxt--redraw-timeline)
-  (twtxt--redraw-navigator))
+  (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--timeline)))
+      (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
+      (twtxt--redraw-timeline)
+      (twtxt--redraw-navigator)
+      (goto-char (point-min))))
 
 (defun twtxt--redraw-header ()
   "Redraw the header."
@@ -195,12 +197,10 @@
 
 (defun twtxt--timeline-layout ()
   "Create the main layout for the welcome screen."
-  (when (get-buffer twtxt--timeline-name-buffer)
-    (kill-buffer twtxt--timeline-name-buffer))
   (switch-to-buffer twtxt--timeline-name-buffer)
   (kill-all-local-variables)
-  ;; Delete old widgets
-  (inhibit-read-only t)
+  (let ((inhibit-read-only t))
+    (erase-buffer))
   (remove-overlays)
   ;; Layouts
   (twtxt-recalculate-timeline-separator)
@@ -219,7 +219,6 @@
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   ;; Go to the top of the buffer
   (widget-setup)
-  (read-only-mode 1)
   (widget-forward 1))
 
 (provide 'twtxt-timeline)
