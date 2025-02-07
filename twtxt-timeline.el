@@ -49,7 +49,7 @@
 (require 'cl-lib)
 
 ;; Variables
-(defvar twtxt--widgets '())
+(defvar twtxt--widget-loading-more nil)
 (defvar twtxt--twtxts-per-page 5)
 (defvar twtxt--twtxts-page 1)
 (defconst twtxt--timeline-name-buffer "*twtxt - Timeline*")
@@ -58,27 +58,38 @@
    (window-width) ?\u2500))
 
 ;; Macros
-(defmacro widget-create-and-add (&rest body)
-  "Create a widget and add it to the list of widgets."
-  `(add-to-list 'twtxt--widgets (widget-create ,@body)))
-
 (defmacro widget-insert-text (text)
   "Insert text into the widget."
   `(widget-create 'item ,text))
 
-(defmacro widget-insert-text-and-add (text)
-  "Insert text into the widget and add it to the list of widgets."
-  `(widget-create-and-add 'item ,text))
-
 ;; Functions
+
+(defun insert-formatted-text (text &optional size font-color background-color)
+  "Inserts TEXT into the buffer with optional font SIZE, FONT-COLOR, and BACKGROUND-COLOR."
+  (let ((start (point)))
+    (insert text)
+    (let ((end (point))
+          (props (list)))
+      (when size
+        (push `(:height ,size) props))
+      (when font-color
+        (push `(:foreground ,font-color) props))
+      (when background-color
+        (push `(:background ,background-color) props))
+      (when props
+        (put-text-property start end 'face (apply #'append props))))))
+
 
 (defun twtxt--goto-next-separator ()
   "Go to the next separator in the buffer."
   (interactive)
   (let ((separator (concat "^" (regexp-quote twtxt--timeline-separator) "$")))
-    (when (search-forward-regexp separator nil t)
-      (beginning-of-line)))
-  (forward-line 1))
+    (if (search-forward-regexp separator nil t)
+      (beginning-of-line) ;; Go to the matching line
+      (twtxt--next-page) ;; Load more twtxts
+      ))
+  (forward-line 1)
+  (recenter 0))
 
 (defun twtxt--goto-previous-separator ()
   "Go to the previous separator in the buffer."
@@ -87,7 +98,8 @@
     (search-backward-regexp separator nil t)
     (when (search-backward-regexp separator nil t)
       (beginning-of-line)))
-  (forward-line 1))
+  (forward-line 1)
+  (recenter 0))
 
 (defun twtxt-recalculate-timeline-separator ()
   "Recalculate the timeline separator."
@@ -95,73 +107,43 @@
 	(make-string
 	 (window-width) ?\u2500)))
 
-(defun twtxt--clean-txts ()
-  "Clean the list of twtxts."
-  (goto-char (point-min))
-  ;; Delete old widgets
-  (dolist (widget-item twtxt--widgets)
-    (when (widgetp widget-item) ;; Check if it's a widget
-      (ignore-errors
-        (widget-delete widget-item))))
-  (setq twtxt--widgets '()))
-
-(defun twtxt--previous-page ()
-  "Go to the previous page of twtxts."
-  (when (> twtxt--twtxts-page 1)
-      (setq twtxt--twtxts-page (1- twtxt--twtxts-page))
-      (twtxt--redraw-timeline)
-      (twtxt--redraw-navigator)
-      (goto-char (point-min))))
-
 (defun twtxt--next-page ()
   "Go to the next page of twtxts."
   (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--timeline)))
       (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-      (twtxt--redraw-timeline)
-      (twtxt--redraw-navigator)
-      (goto-char (point-min))))
+      (widget-delete twtxt--widget-loading-more)
+      (twtxt--insert-timeline)
+      (twtxt--insert-loading)))
 
-(defun twtxt--redraw-header ()
+(defun twtxt--insert-header ()
   "Redraw the header."
-  (widget-insert "\n")
+  (insert-formatted-text "\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--post-buffer))
 		 :help-echo "Publish a new twtxt post."
 		 " ＋ New post ")
-  (widget-insert " ")
+  (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt-timeline))
 		 " ↺ Refresh timeline ")
-  (widget-insert " ")
+  (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt-timeline))
 		 " 🖼 Show profile ")
-  (widget-insert "\n\n")
-  (widget-insert twtxt--timeline-separator)
-  (widget-insert "\n\n"))
+  (insert-formatted-text "\n\n")
+  (widget-insert-text twtxt--timeline-separator)
+  (insert-formatted-text "\n\n"))
 
-(defun twtxt--redraw-navigator ()
+(defun twtxt--insert-loading ()
   "Redraw the navigator."
-  (widget-insert-text-and-add "\n")
-  (widget-create-and-add 'push-button
-			 :notify (lambda (&rest ignore)
-				   (twtxt--next-page))
-			 " Next page → ")
-  (widget-insert-text-and-add "\n\n")
-  (when (> twtxt--twtxts-page 1)
-    (widget-create-and-add 'push-button
-			   :notify (lambda (&rest ignore)
-				     (twtxt--previous-page))
-			   " ← Previous page ")))
+  (setq twtxt--widget-loading-more (widget-create 'item "\n\n ↓ Loading more ↓ ")))
 
-(defun twtxt--redraw-timeline ()
+(defun twtxt--insert-timeline ()
   "Redraw the timeline."
   (twtxt-recalculate-timeline-separator)
-  (twtxt--clean-txts)
-  (twtxt--clean-images)
   ;; List twtxts
   (dolist (twts (cl-subseq (twtxt--timeline)
 			   (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
@@ -173,26 +155,40 @@
 	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twts)))))
 	   (text (cdr (assoc 'text twts))))
       ;; text
-      (widget-insert-text-and-add text)
+      (insert-formatted-text "  ")
+      (insert-formatted-text text)
+      ;; images
       (when (twtxt--image-p text)
 	(progn
-	  (widget-insert-text-and-add "\n\n")
+	  (insert-formatted-text "\n\n")
 	  (dolist (url (get-images-urls text))
 	    (progn
 	      (twtxt--put-image-from-cache url (line-number-at-pos) 200)
-	      (widget-insert-text-and-add "  ")))))
-      (widget-insert-text-and-add "\n\n")
+	      (insert-formatted-text "  ")))))
+      (insert-formatted-text "\n\n")
       ;; avatar
-      (when avatar-url (twtxt--put-image-from-cache avatar-url (line-number-at-pos) 50))
+      (insert-formatted-text "  ")
+      (if avatar-url
+	  (twtxt--put-image-from-cache avatar-url (line-number-at-pos) 50)
+	  (insert-formatted-text twtxt--anonymous-avatar 200 nil nil))
+
       ;; nick + date
-      (widget-insert-text-and-add (concat "  " nick " - " date " "))
-      (if thead (widget-create-and-add 'push-button
-				       :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
-				       "Go to thread") (widget-create-and-add 'push-button " ↳ Reply "))
+      (insert-formatted-text "  ")
+      (insert-formatted-text nick nil "green")
+      (insert-formatted-text "  ")
+      (insert-formatted-text date nil "gray")
+      (insert-formatted-text "  ")
+      (widget-create 'push-button
+		     :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
+		     " ⎆ Go to thread")
+      (insert-formatted-text "  ")
+      (widget-create 'push-button
+		     :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
+		     " ↳ Reply ")
       ;; Separator
-      (widget-insert-text-and-add "\n")
-      (widget-insert-text-and-add twtxt--timeline-separator)
-      (widget-insert-text-and-add "\n"))))
+      (widget-insert-text "\n")
+      (widget-insert-text twtxt--timeline-separator)
+      (widget-insert-text "\n"))))
 
 
 (defun twtxt--timeline-layout ()
@@ -204,17 +200,15 @@
   (remove-overlays)
   ;; Layouts
   (twtxt-recalculate-timeline-separator)
-  (twtxt--redraw-header)
-  (twtxt--redraw-timeline)
-  (twtxt--redraw-navigator)
+  (twtxt--insert-header)
+  (twtxt--insert-timeline)
+  (twtxt--insert-loading)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
   (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
-  (local-set-key (kbd "f") (lambda () (interactive) (twtxt--goto-next-separator)))
-  (local-set-key (kbd "b") (lambda () (interactive) (twtxt--goto-previous-separator)))
-  (local-set-key (kbd "n") (lambda () (interactive) (twtxt--next-page)))
-  (local-set-key (kbd "p") (lambda () (interactive) (twtxt--previous-page)))
+  (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
+  (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt-timeline)))
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   ;; Go to the top of the buffer

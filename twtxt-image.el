@@ -40,10 +40,10 @@
 ;; integrates well with UNIX command line utilities.
 
 (require 'twtxt-variables)
-(require 'widget)
-(require 'wid-edit)
 
 (defconst twtxt--regex-image "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\)")
+
+(defconst twtxt--anonymous-avatar "👤")
 
 (defun twtxt--cache-image-p (url)
   "Check if an image from URL is already cached. It is cached if it is in `twtxt-cache-image-directory' as a base64 encoded string of the URL."
@@ -63,7 +63,10 @@
 		(let ((filename-image (base64-encode-string url :no-line-break)))
 		  (with-temp-file (expand-file-name filename-image twtxt-cache-image-directory)
 		    (set-buffer-file-coding-system 'binary)
-		    (insert data)))))))
+		    (insert data)))))
+    :error (cl-function
+	    (lambda (&key error-thrown &allow-other-keys)
+	      (message "Error downloading image: %S" error-thrown)))))
 
 (defun twtxt--image-p (text)
   "Check if TXT contains an image."
@@ -82,14 +85,9 @@
   "Put an image from cache at URL at POS."
   (unless (twtxt--cache-image-p url)
     (twtxt--cache-image url))
-  (let ((image (base64-encode-string url)))
-    ;; (insert-image (create-image (expand-file-name image twtxt-cache-image-directory) nil nil :width width) pos)
-    ))
+  (let ((image (base64-encode-string url :no-line-break)))
+    (insert-image (create-image (expand-file-name image twtxt-cache-image-directory) nil nil :width width) pos)))
 
-(defun twtxt--clean-images ()
-  "Remove all images from the buffer."
-  ;; (remove-images (point-min) (point-max))
-  )
 
 (provide 'twtxt-image)
 ;;; twtxt-variables.el ends here
