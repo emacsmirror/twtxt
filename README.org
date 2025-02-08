@@ -84,6 +84,13 @@ View your timeline
 |------|--------|
 | ~n~ | Next post |
 | ~p~ | Previous post |
+| ~c~ | New post |
+| ~g~ | Fetch posts |
+| ~r~ | Reply to post |
+| ~t~ | Go to thread |
+| ~P~ | Go to my profile |
+| ~q~ | Quit |
+
 
 Post a status update
 
@@ -94,6 +101,14 @@ Post a status update
 | ~C-c C-c~ | Post tweet |
 | ~C-c C-m~ | Add mention |
 | ~C-c C-k~ | Cancel tweet |
+
+* Optional configuration
+
+Set the twtxts per page:
+
+#+BEGIN_SRC emacs-lisp
+  (setq twtxt--twtxts-per-page 10)
+#+END_SRC
 
 * Hooks
 
