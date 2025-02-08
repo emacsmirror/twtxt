@@ -58,6 +58,10 @@
   "A twtxt client for Emacs."
   :group 'twtxt)
 
+(define-minor-mode twtxt-mode
+  "Minor mode for enhancing the twtxt experience."
+  :lighter " twtxt")
+
 (defun twtxt-open-file ()
   "Open twtxt file."
   (interactive)
@@ -67,6 +71,7 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
+  (twtxt-mode 1)
   (twtxt--fetch-all-feeds-async)
   (add-hook 'twtxt-after-fetch-posts-hook (lambda ()
 					    (setq twtxt--twtxts-page 1)
@@ -76,6 +81,7 @@
 (defun twtxt-post ()
   "POST a status update."
   (interactive)
+  (twtxt-mode 1)
   (twtxt--post-buffer))
 
 (provide 'twtxt)

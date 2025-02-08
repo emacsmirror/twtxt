@@ -42,14 +42,14 @@
 
 ;;; Code:
 (require 'twtxt-feed)
+(require 'twtxt-image)
 (require 'widget)
+(require 'wid-edit)
 (require 'url)
 (require 'cl-lib)
 
-(eval-when-compile
-  (require 'wid-edit))
-
 ;; Variables
+(defvar twtxt--widget-loading-more nil)
 (defvar twtxt--twtxts-per-page 10)
 (defvar twtxt--twtxts-page 1)
 (defconst twtxt--timeline-name-buffer "*twtxt - Timeline*")
@@ -57,67 +57,125 @@
   (make-string
    (window-width) ?\u2500))
 
+;; Macros
+(defmacro widget-insert-text (text)
+  "Insert text into the widget."
+  `(widget-create 'item ,text))
+
 ;; Functions
-(defun put-image-from-url (url pos &optional width)
-  "Put an image from an URL in the buffer at position."
-  (unless url (setq url (url-get-url-at-point)))
-  (unless url
-    (error "Couldn't find URL."))
-  (let ((buffer (url-retrieve-synchronously url)))
-    (unwind-protect
-        (let ((data (with-current-buffer buffer
-                      (goto-char (point-min))
-                      (search-forward "\n\n")
-                      (buffer-substring (point) (point-max)))))
-	  (save-excursion
-            (goto-char (point-min))
-            (forward-line (1- pos)) ; Go to the beginning of the specified line
-            (setq pos (line-beginning-position)))
-	  (put-image (create-image data nil t :width width) pos))
-      (kill-buffer buffer))))
+(defun twtxt-reply ()
+  "Reply to a twtxt."
+  (interactive)
+  (message "Feature not yet implemented."))
 
-(defun imagesp (txt)
-  "Check if TXT contains an image."
-  (string-match-p "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" txt))
+(defun twtxt-thread ()
+  "Go to the thread of a twtxt."
+  (interactive)
+  (message "Feature not yet implemented."))
 
-(defun get-images-urls (txt)
-  "Get all images URLs from TXT."
-  (let ((urls '()))
-    (while (string-match "http.*\\(png\\|jpg\\|jpeg\\|gif\\)" txt)
-      (push (match-string 0 txt) urls)
-      (setq txt (replace-match "" nil nil txt)))
-    urls))
+(defun twtxt-my-profile ()
+  "Show my profile."
+  (interactive)
+  (message "Feature not yet implemented."))
 
-;; Layout
-(defun twtxt--timeline-layout ()
-  "Create the main layout for the welcome screen."
-  (switch-to-buffer twtxt--timeline-name-buffer)
-  (kill-all-local-variables)
-  (let ((inhibit-read-only t))
-    (erase-buffer))
-  (remove-overlays)
-  (erase-buffer)
-  ;; Controls
-  (widget-insert "\n")
+(defun twtxt--last-separator-p ()
+  "Return t if only one `twtxt--timeline-separator` remains from point to the end."
+  (save-excursion
+    (<= (count-matches (concat "^" (regexp-quote twtxt--timeline-separator) "$")) 1)))
+
+
+(defun insert-formatted-text (text &optional size font-color background-color)
+  "Inserts TEXT into the buffer with optional font SIZE, FONT-COLOR, and BACKGROUND-COLOR."
+  (let ((start (point)))
+    (insert text)
+    (let ((end (point))
+          (props (list)))
+      (when size
+        (push `(:height ,size) props))
+      (when font-color
+        (push `(:foreground ,font-color) props))
+      (when background-color
+        (push `(:background ,background-color) props))
+      (when props
+        (put-text-property start end 'face (apply #'append props))))))
+
+
+(defun twtxt--goto-next-separator ()
+  "Go to the next separator in the buffer."
+  (interactive)
+  (let ((separator (concat "^" (regexp-quote twtxt--timeline-separator) "$")))
+    (if (search-forward-regexp separator nil t)
+      (beginning-of-line) ;; Go to the matching line
+      (twtxt--next-page) ;; Load more twtxts
+      ))
+  (forward-line 1)
+  (recenter 0)
+  ;; Load more twtxts if we are at the end of the twtxts
+  (when (twtxt--last-separator-p)
+    (let ((current-point (point)))
+      (goto-char (point-max))
+      (twtxt--next-page)
+      (goto-char current-point))))
+
+(defun twtxt--goto-previous-separator ()
+  "Go to the previous separator in the buffer."
+  (interactive)
+  (let ((separator (concat "^" (regexp-quote twtxt--timeline-separator) "$")))
+    (search-backward-regexp separator nil t)
+    (when (search-backward-regexp separator nil t)
+      (beginning-of-line)))
+  (forward-line 1)
+  (recenter 0))
+
+(defun twtxt-recalculate-timeline-separator ()
+  "Recalculate the timeline separator."
+  (setq twtxt--timeline-separator
+	(make-string
+	 (window-width) ?\u2500)))
+
+(defun twtxt--next-page ()
+  "Go to the next page of twtxts."
+  (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--timeline)))
+    (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
+    (let ((inhibit-read-only t))  ;; Permite modificaciones temporales
+      (widget-delete twtxt--widget-loading-more)
+      (twtxt--insert-timeline)
+      (twtxt--insert-loading))))
+
+
+(defun twtxt--insert-header ()
+  "Redraw the header."
+  (insert-formatted-text "\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--post-buffer))
 		 :help-echo "Publish a new twtxt post."
-		 " ＋ New post ")
-  (widget-insert " ")
+		 "＋ New post ")
+  (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt-timeline))
+			   (twtxt--timeline-layout))
 		 " ↺ Refresh timeline ")
-  (widget-insert " ")
+  (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt-timeline))
+			   (message "Feature not yet implemented."))
 		 " 🖼 Show profile ")
-  (widget-insert "\n\n")
-  (widget-insert twtxt--timeline-separator)
-  (widget-insert "\n\n")
-  ;; twtxts
+  (insert-formatted-text "\n\n")
+  (insert-formatted-text twtxt--timeline-separator)
+  (insert-formatted-text "\n\n"))
+
+(defun twtxt--insert-loading ()
+  "Redraw the navigator."
+  (setq twtxt--widget-loading-more (widget-create 'push-button
+						  :notify (lambda (&rest ignore)
+							    (twtxt--next-page))
+						  " ↓ Show more ↓ ")))
+
+(defun twtxt--insert-timeline ()
+  "Redraw the timeline."
+  (twtxt-recalculate-timeline-separator)
+  ;; List twtxts
   (dolist (twts (cl-subseq (twtxt--timeline)
 			   (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 			   (* twtxt--twtxts-page twtxt--twtxts-per-page)))
@@ -128,47 +186,68 @@
 	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twts)))))
 	   (text (cdr (assoc 'text twts))))
       ;; text
-      (widget-insert text)
-      (when (imagesp text) (progn
-			     (widget-insert "\n\n")
-			     (dolist (url (get-images-urls text))
-			       (progn
-				 (put-image-from-url url (line-number-at-pos) 200)
-				 (widget-insert "  ")))))
-      (widget-insert "\n\n")
+      (insert-formatted-text "\n  ")
+      (insert-formatted-text text)
+      ;; images
+      (when (twtxt--image-p text)
+	(progn
+	  (insert-formatted-text "\n\n")
+	  (dolist (url (get-images-urls text))
+	    (progn
+	      (twtxt--put-image-from-cache url (line-number-at-pos) 200)
+	      (insert-formatted-text "  ")))))
+      (insert-formatted-text "\n\n")
       ;; avatar
-      (when avatar-url (put-image-from-url avatar-url (line-number-at-pos) 50))
+      (insert-formatted-text "  ")
+      (if avatar-url
+	  (twtxt--put-image-from-cache avatar-url (line-number-at-pos) 50)
+	  (insert-formatted-text twtxt--anonymous-avatar 200 nil nil))
+
       ;; nick + date
-      (widget-insert (concat "  " nick " - " date " "))
-      (if thead (widget-create 'push-button
-			       :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
-			       "Go to thread") (widget-create 'push-button " ↳ Reply "))
+      (insert-formatted-text "  ")
+      (insert-formatted-text nick nil "yellow")
+      (insert-formatted-text "  ")
+      (insert-formatted-text date nil "#FF5733")
+      (insert-formatted-text "  ")
+      (widget-create 'push-button
+		     :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
+		     " ⎆ Go to thread")
+      (insert-formatted-text "  ")
+      (widget-create 'push-button
+		     :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
+		     " ↳ Reply ")
       ;; Separator
-      (widget-insert "\n")
-      (widget-insert twtxt--timeline-separator)
-      (widget-insert "\n")))
+      (insert-formatted-text "\n")
+      (insert-formatted-text twtxt--timeline-separator)
+      (insert-formatted-text "\n"))))
 
-  ;; Navigation
-  (widget-insert "\n")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-			   (twtxt--timeline-layout))
-		 " Next page → ")
-  (widget-insert "\n\n")
-  (when (> twtxt--twtxts-page 1)
-    (widget-create 'push-button
-		   :notify (lambda (&rest ignore)
-			     (setq twtxt--twtxts-page (1- twtxt--twtxts-page))
-			     (twtxt--timeline-layout))
-		   " ← Previous page "))
+
+(defun twtxt--timeline-layout ()
+  "Create the main layout for the welcome screen."
+  (switch-to-buffer twtxt--timeline-name-buffer)
+  (kill-all-local-variables)
+  (let ((inhibit-read-only t))
+    (erase-buffer))
+  (remove-overlays)
+  ;; Layouts
+  (twtxt-recalculate-timeline-separator)
+  (twtxt--insert-header)
+  (twtxt--insert-timeline)
+  (twtxt--insert-loading)
   (use-local-map widget-keymap)
-  (widget-setup)
   (display-line-numbers-mode 0)
-
+  ;; Keybindings
+  (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
+  (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
+  (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
+  (local-set-key (kbd "g") (lambda () (interactive) (twtxt-timeline)))
+  (local-set-key (kbd "r") (lambda () (interactive) (twtxt-reply)))
+  (local-set-key (kbd "t") (lambda () (interactive) (twtxt-thread)))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt-my-profile)))
+  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   ;; Go to the top of the buffer
-  (goto-char (point-min))
-  (read-only-mode 1))
+  (widget-setup)
+  (widget-forward 1))
 
 (provide 'twtxt-timeline)
 ;;; twtxt-timeline.el ends here
