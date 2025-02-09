@@ -87,6 +87,7 @@ View your timeline
 | ~c~ | New post |
 | ~g~ | Fetch posts |
 | ~r~ | Reply to post |
+| ~R~ | Reply to thread |
 | ~t~ | Go to thread |
 | ~P~ | Go to my profile |
 | ~q~ | Quit |

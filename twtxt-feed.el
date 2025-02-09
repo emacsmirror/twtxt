@@ -246,7 +246,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
   (mapcar (lambda (el) (or el 0)) date))
 
-(defun twtxt--timeline ()
+(defun twtxt--list-timeline ()
   "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date."
   (let* ((timeline (mapcan (lambda (feed)
                              (let ((author-id (cdr (assoc 'id feed))) ;; Get author ID once
