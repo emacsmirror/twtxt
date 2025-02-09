@@ -87,6 +87,7 @@ View your timeline
 | ~c~ | New post |
 | ~g~ | Fetch posts |
 | ~r~ | Reply to post |
+| ~R~ | Reply to thread |
 | ~t~ | Go to thread |
 | ~P~ | Go to my profile |
 | ~q~ | Quit |
@@ -128,3 +129,15 @@ For example, upload your twtxt file to a server or execute other commands. Confi
   									 "user@server:/your/path/twtxt.txt"
   									 ) nil 0)))
 #+END_SRC
+
+* It's slow when I open the timeline
+
+If you have a lot of followers, fetching posts can be slow. The client is full of optimizations to remedy this, such as asynchronous fetching, avatar caching, calculations that are performed only when the data is being viewed, and other tricks. Unfortunately, Emacs has to perform time-consuming tasks such as sorting and interface construction. These tasks depend on your computing power.
+
+If you want to improve speed you will have to disable some features:
+
+- Replies and threads.
+- Reduce the number of followers.
+- Reduce the number of posts per page.
+
+I hope you can improve the performance. Enjoy!

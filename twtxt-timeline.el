@@ -43,6 +43,7 @@
 ;;; Code:
 (require 'twtxt-feed)
 (require 'twtxt-image)
+(require 'twtxt-post)
 (require 'widget)
 (require 'wid-edit)
 (require 'url)
@@ -52,7 +53,9 @@
 (defvar twtxt--widget-loading-more nil)
 (defvar twtxt--twtxts-per-page 10)
 (defvar twtxt--twtxts-page 1)
-(defconst twtxt--timeline-name-buffer "*twtxt - Timeline*")
+(defconst twtxt--text-button-reply-thread " ↳ Reply in thread ")
+(defconst twtxt--text-button-reply-twt " ↳ Reply to twt ")
+(defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
 (defvar twtxt--timeline-separator
   (make-string
    (window-width) ?\u2500))
@@ -63,12 +66,19 @@
   `(widget-create 'item ,text))
 
 ;; Functions
-(defun twtxt-reply ()
+(defun twtxt--goto-reply-twt ()
   "Reply to a twtxt."
-  (interactive)
-  (message "Feature not yet implemented."))
+  (search-backward-regexp twtxt--timeline-separator)
+  (search-forward-regexp twtxt--text-button-reply-twt)
+  (widget-button-press (point)))
 
-(defun twtxt-thread ()
+(defun twtxt--goto-reply-thread ()
+  "Reply to a thread."
+  (search-backward-regexp twtxt--timeline-separator)
+  (search-forward-regexp twtxt--text-button-reply-thread)
+  (widget-button-press (point)))
+
+(defun twtxt--goto-thread ()
   "Go to the thread of a twtxt."
   (interactive)
   (message "Feature not yet implemented."))
@@ -137,7 +147,7 @@
   "Go to the next page of twtxts."
   (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--timeline)))
     (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-    (let ((inhibit-read-only t))  ;; Permite modificaciones temporales
+    (let ((inhibit-read-only t))  ;; Allow editing
       (widget-delete twtxt--widget-loading-more)
       (twtxt--insert-timeline)
       (twtxt--insert-loading))))
@@ -176,15 +186,16 @@
   "Redraw the timeline."
   (twtxt-recalculate-timeline-separator)
   ;; List twtxts
-  (dolist (twts (cl-subseq (twtxt--timeline)
-			   (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
-			   (* twtxt--twtxts-page twtxt--twtxts-per-page)))
-    (let* ((profile (twtxt--profile-by-id (cdr (assoc 'author-id twts))))
+  (dolist (twt (cl-subseq (twtxt--list-timeline)
+			  (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
+			  (* twtxt--twtxts-page twtxt--twtxts-per-page)))
+    (let* ((profile (twtxt--profile-by-id (cdr (assoc 'author-id twt))))
 	   (nick (cdr (assoc 'nick profile)))
 	   (avatar-url (cdr (assoc 'avatar profile)))
-	   (thead (cdr (assoc 'thread twts)))
-	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twts)))))
-	   (text (cdr (assoc 'text twts))))
+	   (hash (cdr (assoc 'hash twt)))
+	   (thread (cdr (assoc 'thread twt)))
+	   (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twt)))))
+	   (text (cdr (assoc 'text twt))))
       ;; text
       (insert-formatted-text "\n  ")
       (insert-formatted-text text)
@@ -201,7 +212,7 @@
       (insert-formatted-text "  ")
       (if avatar-url
 	  (twtxt--put-image-from-cache avatar-url (line-number-at-pos) 50)
-	  (insert-formatted-text twtxt--anonymous-avatar 200 nil nil))
+	(insert-formatted-text twtxt--anonymous-avatar 200 nil nil))
 
       ;; nick + date
       (insert-formatted-text "  ")
@@ -209,13 +220,19 @@
       (insert-formatted-text "  ")
       (insert-formatted-text date nil "#FF5733")
       (insert-formatted-text "  ")
-      (widget-create 'push-button
-		     :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
-		     " ⎆ Go to thread")
+      (when thread
+	(widget-create 'push-button
+		       :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
+		       " ⎆ Thread"))
+      (insert-formatted-text "  ")
+      (when thread
+	(widget-create 'push-button
+		       :notify (lambda (&rest ignore) (twtxt--post-buffer thread))
+		       twtxt--text-button-reply-thread))
       (insert-formatted-text "  ")
       (widget-create 'push-button
-		     :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
-		     " ↳ Reply ")
+		     :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
+		     twtxt--text-button-reply-twt)
       ;; Separator
       (insert-formatted-text "\n")
       (insert-formatted-text twtxt--timeline-separator)
@@ -241,8 +258,9 @@
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt-timeline)))
-  (local-set-key (kbd "r") (lambda () (interactive) (twtxt-reply)))
-  (local-set-key (kbd "t") (lambda () (interactive) (twtxt-thread)))
+  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
+  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt)))
+  (local-set-key (kbd "R") (lambda () (interactive) (twtxt--goto-reply-thread)))
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt-my-profile)))
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   ;; Go to the top of the buffer
