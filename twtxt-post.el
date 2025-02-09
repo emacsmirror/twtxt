@@ -77,10 +77,10 @@
        (insert "@<" selected-user "> "))))))
 
 
-(defun twtxt--post-buffer ()
+(defun twtxt--post-buffer (&optional hash)
   "Open a temporary buffer for writing and posting a new status update."
   (setq twtxt--mentions nil)
-  (let ((buffer-name "*Twtxt New Post*"))
+  (let ((buffer-name "*New post | twtxt*"))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
     (insert "Write your post below:\n\n")
@@ -98,7 +98,8 @@
 		     (define-key map (kbd "C-c C-k") 'twtxt--post-cancel)
                      map))
     (goto-char (point-max))
-    (message "Write your post and press C-c C-c to send or C-c C-k to cancel.")))
+    (when hash
+      (insert (format "(#%s) " hash)))))
 
 (defun twtxt--post-confirm ()
   "Post the content of the buffer as a new status update."

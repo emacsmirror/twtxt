@@ -247,7 +247,7 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
   (mapcar (lambda (el) (or el 0)) date))
 
 (defun twtxt--timeline ()
-  "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date with the structure: (id author-id date text)."
+  "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date."
   (let* ((timeline (mapcan (lambda (feed)
                              (let ((author-id (cdr (assoc 'id feed))) ;; Get author ID once
                                    (twts (cdr (assoc 'twts feed)))) ;; Get twts
@@ -255,17 +255,20 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
                                          (list
                                           (cons 'id (cdr (assoc 'id twt)))
                                           (cons 'author-id author-id)
-                                          (cons 'date (cdr (assoc 'date twt)))
+					  (cons 'date (cdr (assoc 'date twt)))
+					  (cons 'thread (cdr (assoc 'thread twt)))
+					  (cons 'hash (cdr (assoc 'hash twt)))
                                           (cons 'text (cdr (assoc 'text twt)))))
                                        twts)))
                            twtxt--feeds))
+	 ;; Sort the timeline by date
 	 (timeline-sorted
 	  (sort timeline
 		(lambda (a b)
 		  (time-less-p
 		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date b))))
 		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date a)))))))))
-    timeline))
+    timeline-sorted))
 
 (defun twtxt--profile-by-id (id)
   "Get the profile of the user by ID. Parameters: ID (string). Return: A list with the profile of the user."
