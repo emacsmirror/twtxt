@@ -41,9 +41,11 @@
 ;; integrates well with UNIX command line utilities.
 
 ;;; Code:
+(require 'twtxt-string)
 (require 'twtxt-feed)
 (require 'twtxt-image)
 (require 'twtxt-post)
+(require 'twtxt-profile)
 (require 'widget)
 (require 'wid-edit)
 (require 'url)
@@ -83,32 +85,10 @@
   (interactive)
   (message "Feature not yet implemented."))
 
-(defun twtxt-my-profile ()
-  "Show my profile."
-  (interactive)
-  (message "Feature not yet implemented."))
-
 (defun twtxt--last-separator-p ()
   "Return t if only one `twtxt--timeline-separator` remains from point to the end."
   (save-excursion
     (<= (count-matches (concat "^" (regexp-quote twtxt--timeline-separator) "$")) 1)))
-
-
-(defun insert-formatted-text (text &optional size font-color background-color)
-  "Inserts TEXT into the buffer with optional font SIZE, FONT-COLOR, and BACKGROUND-COLOR."
-  (let ((start (point)))
-    (insert text)
-    (let ((end (point))
-          (props (list)))
-      (when size
-        (push `(:height ,size) props))
-      (when font-color
-        (push `(:foreground ,font-color) props))
-      (when background-color
-        (push `(:background ,background-color) props))
-      (when props
-        (put-text-property start end 'face (apply #'append props))))))
-
 
 (defun twtxt--goto-next-separator ()
   "Go to the next separator in the buffer."
@@ -175,7 +155,7 @@
   (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (message "Feature not yet implemented."))
+			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 Show profile ")
   (insert-formatted-text "\n\n")
   (insert-formatted-text twtxt--timeline-separator)
