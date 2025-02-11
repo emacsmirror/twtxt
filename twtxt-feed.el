@@ -248,6 +248,7 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 
 (defun twtxt--list-timeline ()
   "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date."
+  (twtxt--update-my-profile-on-feeds)
   (let* ((timeline (mapcan (lambda (feed)
                              (let ((author-id (cdr (assoc 'id feed))) ;; Get author ID once
                                    (twts (cdr (assoc 'twts feed)))) ;; Get twts
@@ -261,7 +262,6 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
                                           (cons 'text (cdr (assoc 'text twt)))))
                                        twts)))
                            twtxt--feeds))
-	 ;; Sort the timeline by date
 	 (timeline-sorted
 	  (sort timeline
 		(lambda (a b)
@@ -270,13 +270,18 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date a)))))))))
     timeline-sorted))
 
+(defun twtxt--update-my-profile-on-feeds ()
+  "Update my profile on twtxt--feeds."
+  ;; Delete the old profile
+  (let ((my-id (cdr (assoc 'id twtxt--my-profile))))
+    (setq twtxt--feeds (seq-filter (lambda (feed) (not (equal (cdr (assoc 'id feed)) my-id))) twtxt--feeds)))
+  ;; Add the new profile
+  (setq twtxt--feeds (cons twtxt--my-profile twtxt--feeds)))
+
 (defun twtxt--profile-by-id (id)
   "Get the profile of the user by ID. Parameters: ID (string). Return: A list with the profile of the user."
   (car (seq-filter (lambda (feed) (string= id (cdr (assoc 'id feed)))) twtxt--feeds)))
 
-
-;; Initialize
-(setq twtxt--my-profile (twtxt--get-my-profile))
 
 (defun twtxt--check-queue ()
   ;; Check if the queue is done
@@ -297,8 +302,13 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 			     (twts (twtxt--get-twts-from-feed feed)))
 			(append profile (list (cons 'twts twts)))))
 		    twtxt-queue))
+      ;; Add my profile to twtxt--feeds
+      (twtxt--update-my-profile-on-feeds)
       (message "Feeding completed!")
       (run-hooks 'twtxt-after-fetch-posts-hook))))
+
+;; Initialize
+(setq twtxt--my-profile (twtxt--get-my-profile))
 
 (provide 'twtxt-feed)
 ;;; twtxt-feed.el ends here
