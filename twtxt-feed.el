@@ -63,6 +63,7 @@
 ;; (description . "A description of the user") ;; The description of the user)
 ;; (follow . (((name . "Bar") (url . ("http://example.com/twtxt.txt"))))) ;; The users that the user follows
 ;; (link . (((name . "Blog") (url . "http://example.com/blog")) (name . "GitHub") (url . "https://github.com/username"))) ;; The links of the user
+;; (public-key . "-----BEGIN PGP PUBLIC KEY BLOCK-----...") ;; The public key of the user
 ;; (twts . ;; The twts of the user
 ;;                (((id . 1) ;; The id of the twt, unique for each post
 ;; 		    (date . date) ;; The date of the twt
@@ -175,11 +176,8 @@ Returns:
 (defun twtxt--split-link (raw-text)
   "Split RAW-TEXT into a link with a name and a URL.
 Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). If the text doesn't contain a valid URL, return nil. Extension: https://twtxt.dev/exts/metadata.html"
-  (when raw-text (let ((split-text (split-string raw-text " "))
-		       ;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-		       (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
-		   (if (and (> (length split-text) 1)
-			    (string-match-p url-regex (car (last split-text))))
+  (when raw-text (let ((split-text (split-string raw-text " ")))
+		   (if (> (length split-text) 1)
 		       (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
 			     (cons 'url (car (last split-text))))
 		     nil))))
@@ -217,6 +215,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
      (cons 'link (mapcar #'twtxt--split-link (delq nil links-list)))
      (cons 'follow (mapcar #'twtxt--split-link (delq nil follows-list)))
      (cons 'avatar (twtxt--get-value feed-without-twts "avatar"))
+     (cons 'public-key (twtxt--get-value feed-without-twts "public_key"))
      (cons 'description (twtxt--get-value feed-without-twts "description")))))
 
 (defun twtxt--get-twts-from-feed (feed)

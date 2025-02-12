@@ -122,7 +122,8 @@
 	  mention-url
 	  :type "GET"
 	  :headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
-		     ("Content-Type" . "text/plain; charset=utf-8"))))
+		     ("Content-Type" . "text/plain; charset=utf-8"))
+	  :error (lambda (&rest _) (message "Failed to mention %s" mention-url))))
       ;; Run hook
       (run-hooks 'twtxt-post-tweet-hook)
       ;; Feedback
