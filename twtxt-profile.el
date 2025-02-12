@@ -47,7 +47,7 @@
 
 (defun twtxt--insert-section (title)
   "Insert a section TITLE formatted with separators."
-  (insert-formatted-text (concat "\n━━━━━━━━━━━━━━━━━\n  " title "\n━━━━━━━━━━━━━━━━━\n")))
+  (insert-formatted-text (concat "\n━━━━━━━━━━━━━━━━━━━\n  " title "\n━━━━━━━━━━━━━━━━━━━\n")))
 
 (defun twtxt---profile-layout (author-id)
   "Open the twtxt profile buffer."
@@ -90,7 +90,7 @@
 	(insert "\n")))
     ;; Follows
     (when follows
-      (twtxt--insert-section "👥 FOLLOWING")
+      (twtxt--insert-section (concat "👥 FOLLOWING " (format "%s" (length follows))))
       (dolist (follow follows)
 	(insert-formatted-text (concat (cdr (assoc 'name follow)) " → ") nil "yellow")
 	(insert-formatted-text (cdr (assoc 'url follow)))

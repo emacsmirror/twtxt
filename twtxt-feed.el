@@ -176,11 +176,8 @@ Returns:
 (defun twtxt--split-link (raw-text)
   "Split RAW-TEXT into a link with a name and a URL.
 Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). If the text doesn't contain a valid URL, return nil. Extension: https://twtxt.dev/exts/metadata.html"
-  (when raw-text (let ((split-text (split-string raw-text " "))
-		       ;; Source: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-		       (url-regex "\\([-a-zA-Z0-9+.]++://[a-zA-Z0-9.-]+\\.[a-zA-Z]+\\(?:/[a-zA-Z0-9._~:/?#@!$&'()*+,;=%-]*\\)?\\)"))
-		   (if (and (> (length split-text) 1)
-			    (string-match-p url-regex (car (last split-text))))
+  (when raw-text (let ((split-text (split-string raw-text " ")))
+		   (if (> (length split-text) 1)
 		       (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
 			     (cons 'url (car (last split-text))))
 		     nil))))
