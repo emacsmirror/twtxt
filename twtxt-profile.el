@@ -100,7 +100,7 @@
     (insert-formatted-text " ")
     (insert-formatted-text (if public-key "🟢" "🔴"))
     (insert-formatted-text (if public-key " Active" " Inactive") nil "yellow")
-    (insert-formatted-text "\n\n")
+    (insert-formatted-text "\n")
     (when public-key
       (insert-formatted-text " 🔑 Public key: " nil "yellow")
       (insert-formatted-text public-key)))
