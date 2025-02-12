@@ -145,12 +145,18 @@
 
 (defun twtxt--next-page ()
   "Go to the next page of twtxts."
-  (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--timeline)))
+  (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline)))
     (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
     (let ((inhibit-read-only t))  ;; Allow editing
       (widget-delete twtxt--widget-loading-more)
       (twtxt--insert-timeline)
       (twtxt--insert-loading))))
+
+(defun twtxt--timeline-refresh ()
+  "Refresh the timeline."
+  (interactive)
+  (setq twtxt--twtxts-page 1)
+  (twtxt-timeline))
 
 
 (defun twtxt--insert-header ()
@@ -164,7 +170,7 @@
   (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt--timeline-layout))
+			   (twtxt--timeline-refresh))
 		 " ↺ Refresh timeline ")
   (insert-formatted-text " ")
   (widget-create 'push-button
@@ -223,7 +229,7 @@
       (when thread
 	(widget-create 'push-button
 		       :notify (lambda (&rest ignore) (message "Feature not yet implemented."))
-		       " ⎆ Thread"))
+		       " ⎆ Open thread "))
       (insert-formatted-text "  ")
       (when thread
 	(widget-create 'push-button
@@ -257,7 +263,7 @@
   (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
-  (local-set-key (kbd "g") (lambda () (interactive) (twtxt-timeline)))
+  (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
   (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
   (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt)))
   (local-set-key (kbd "R") (lambda () (interactive) (twtxt--goto-reply-thread)))
