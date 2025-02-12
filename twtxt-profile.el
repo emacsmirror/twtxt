@@ -53,40 +53,59 @@
   "Open the twtxt profile buffer."
   (interactive)
   (switch-to-buffer twtxt--profile-buffer)
-  (let ((profile (twtxt--profile-by-id author-id)))
+  (let* ((profile (twtxt--profile-by-id author-id))
+	 (avatar (cdr (assoc 'avatar profile)))
+	 (nick (cdr (assoc 'nick profile)))
+	 (url (cdr (assoc 'url profile)))
+	 (description (cdr (assoc 'description profile)))
+	 (links (cdr (assoc 'link profile)))
+	 (follows (cdr (assoc 'follow profile)))
+	 (public-key (cdr (assoc 'public-key profile))))
     ;; Avatar
-    (insert-formatted-text "\n ")
-    (twtxt--put-image-from-cache (cdr (assoc 'avatar profile)) (line-number-at-pos) 200)
+    (when avatar
+      (insert-formatted-text "\n ")
+      (twtxt--put-image-from-cache avatar (line-number-at-pos) 200))
     ;; Nick
-    (insert-formatted-text "\n\n")
-    (insert-formatted-text (format " 👤 Nick: ") nil "yellow")
-    (insert-formatted-text (cdr (assoc 'nick profile)))
+    (when nick
+      (insert-formatted-text "\n\n")
+      (insert-formatted-text (format " 👤 Nick: ") nil "yellow")
+      (insert-formatted-text nick))
     ;; URL
-    (insert-formatted-text "\n\n")
-    (insert-formatted-text (format " 🔗 URL: ") nil "yellow")
-    (insert-formatted-text (cdr (assoc 'url profile)))
+    (when url
+      (insert-formatted-text "\n\n")
+      (insert-formatted-text (format " 🔗 URL: ") nil "yellow")
+      (insert-formatted-text url))
     ;; Description
-    (insert-formatted-text "\n\n")
-    (insert-formatted-text (format " 📖 Description: ") nil "yellow")
-    (insert-formatted-text (cdr (assoc 'description profile)))
-    (insert-formatted-text "\n\n")
-    ;; Relevant links
-    (twtxt--insert-section "📌 LINKS")
-    (dolist (link (cdr (assoc 'link profile)))
-      (insert-formatted-text (car link) (cdr link)))
-
-    ;; Following
-    (twtxt--insert-section "👥 FOLLOWING")
-    (dolist (follow (cdr (assoc 'following profile)))
-      (insert-formatted-text (car follow) (cdr follow)))
-
+    (when description
+      (insert-formatted-text "\n\n")
+      (insert-formatted-text (format " 📖 Description: ") nil "yellow")
+      (insert-formatted-text description)
+      (insert-formatted-text "\n"))
+    ;; Links
+    (when links
+      (twtxt--insert-section "📌 LINKS")
+      (dolist (link links)
+	(insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow")
+	(insert-formatted-text (cdr (assoc 'url link)))
+	(insert "\n")))
+    ;; Follows
+    (when follows
+      (twtxt--insert-section "👥 FOLLOWING")
+      (dolist (follow follows)
+	(insert-formatted-text (concat (cdr (assoc 'name follow)) " → ") nil "yellow")
+	(insert-formatted-text (cdr (assoc 'url follow)))
+	(insert "\n")))
     ;; Direct Messages
-    (twtxt--insert-section "🗨 DIRECT MESSAGE")
-    (let ((dm (cdr (assoc 'direct-message profile))))
-      (insert-formatted-text "Enable:" (if (cdr (assoc 'enable dm)) "🟢" "🔴"))
-      (insert "  Public key:\n" (cdr (assoc 'public-key dm)) "\n")))
+    (twtxt--insert-section " 🗨 DIRECT MESSAGE")
+    (insert-formatted-text " ")
+    (insert-formatted-text (if public-key "🟢" "🔴"))
+    (insert-formatted-text (if public-key " Active" " Inactive") nil "yellow")
+    (insert-formatted-text "\n\n")
+    (when public-key
+      (insert-formatted-text " 🔑 Public key: " nil "yellow")
+      (insert-formatted-text public-key)))
 
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt-profile-buffer)))
+  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
   (goto-char (point-min))
   (read-only-mode))
 

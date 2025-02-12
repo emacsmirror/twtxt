@@ -63,6 +63,7 @@
 ;; (description . "A description of the user") ;; The description of the user)
 ;; (follow . (((name . "Bar") (url . ("http://example.com/twtxt.txt"))))) ;; The users that the user follows
 ;; (link . (((name . "Blog") (url . "http://example.com/blog")) (name . "GitHub") (url . "https://github.com/username"))) ;; The links of the user
+;; (public-key . "-----BEGIN PGP PUBLIC KEY BLOCK-----...") ;; The public key of the user
 ;; (twts . ;; The twts of the user
 ;;                (((id . 1) ;; The id of the twt, unique for each post
 ;; 		    (date . date) ;; The date of the twt
@@ -217,6 +218,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
      (cons 'link (mapcar #'twtxt--split-link (delq nil links-list)))
      (cons 'follow (mapcar #'twtxt--split-link (delq nil follows-list)))
      (cons 'avatar (twtxt--get-value feed-without-twts "avatar"))
+     (cons 'public-key (twtxt--get-value feed-without-twts "public_key"))
      (cons 'description (twtxt--get-value feed-without-twts "description")))))
 
 (defun twtxt--get-twts-from-feed (feed)

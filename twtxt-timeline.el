@@ -219,6 +219,10 @@
       (widget-create 'push-button
 		     :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
 		     twtxt--text-button-reply-twt)
+      (insert-formatted-text "  ")
+      (widget-create 'push-button
+		     :notify (lambda (&rest ignore) (twtxt---profile-layout (cdr (assoc 'author-id twt))))
+		     " Show profile ")
       ;; Separator
       (insert-formatted-text "\n")
       (insert-formatted-text twtxt--timeline-separator)
