@@ -73,9 +73,16 @@
     ;; URL
     (when url
       (insert-formatted-text "\n\n")
-      (insert-formatted-text (format " 🔗 URL: ") nil "yellow")
-      (insert-formatted-text url))
-    ;; Description
+      (if (stringp url)
+	  (progn
+	    ;; Only one URL
+	    (insert-formatted-text (format " 🔗 URL: ") nil "yellow")
+	    (insert-formatted-text url))
+	(progn
+	  ;; Multiple URLs
+	  (insert-formatted-text (format " 🔗 URLs:\n") nil "yellow")
+	  (dolist (item url)
+	    (insert-formatted-text (format "      - %s\n" item))))))
     (when description
       (insert-formatted-text "\n\n")
       (insert-formatted-text (format " 📖 Description: ") nil "yellow")
@@ -85,7 +92,8 @@
     (when links
       (twtxt--insert-section "📌 LINKS")
       (dolist (link links)
-	(insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow")
+	;; When name is present
+	(when (cdr (assoc 'name link)) (insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow"))
 	(insert-formatted-text (cdr (assoc 'url link)))
 	(insert "\n")))
     ;; Follows
