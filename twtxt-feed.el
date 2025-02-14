@@ -175,11 +175,16 @@ Returns:
 
 (defun twtxt--split-link (raw-text)
   "Split RAW-TEXT into a link with a name and a URL.
-Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). If the text doesn't contain a valid URL, return nil. Extension: https://twtxt.dev/exts/metadata.html"
+Return nil if it doesn't contain a valid name and URL. For example: My blog https://example.com -> ((name . \"My blog\") (url . \"https://example.com\")). In the case where there is only one element \"https://example.com\" .Extension: https://twtxt.dev/exts/metadata.html"
   (when raw-text (let ((split-text (split-string raw-text " ")))
-		   (if (> (length split-text) 1)
-		       (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
-			     (cons 'url (car (last split-text))))
+		   (cond
+		    ((= (length split-text) 0) nil)
+		    ((= (length split-text) 1)
+		     (list (cons 'name nil)
+			   (cons 'url (car split-text))))
+		    ((> (length split-text) 1)
+		     (list (cons 'name (mapconcat #'identity (butlast split-text) " "))
+			   (cons 'url (car (last split-text)))))
 		     nil))))
 
 (defun twtxt--get-thread-id (text)

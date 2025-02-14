@@ -92,7 +92,8 @@
     (when links
       (twtxt--insert-section "📌 LINKS")
       (dolist (link links)
-	(insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow")
+	;; When name is present
+	(when (cdr (assoc 'name link)) (insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow"))
 	(insert-formatted-text (cdr (assoc 'url link)))
 	(insert "\n")))
     ;; Follows
