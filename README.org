@@ -87,8 +87,8 @@ View your timeline
 | ~c~ | New post |
 | ~g~ | Fetch posts |
 | ~r~ | Reply to post |
-| ~R~ | Reply to thread |
 | ~t~ | Go to thread |
+| ~T~ | Reply to thread |
 | ~P~ | Go to my profile |
 | ~q~ | Quit |
 
@@ -102,6 +102,13 @@ Post a status update
 | ~C-c C-c~ | Post tweet |
 | ~C-c C-m~ | Add mention |
 | ~C-c C-k~ | Cancel tweet |
+
+View profile
+
+| Key | Action |
+|------|--------|
+| ~q~ | Quit |
+
 
 * Optional configuration
 

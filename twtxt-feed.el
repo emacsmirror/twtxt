@@ -311,6 +311,14 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
       (message "Feeding completed!")
       (run-hooks 'twtxt-after-fetch-posts-hook))))
 
+(defun twtxt--replies-p (hash twts)
+  "Check if some TWTS has HASH as a thread. Return t if it has, otherwise return nil."
+  (seq-some (lambda (twt) (string= hash (cdr (assoc 'thread twt)))) twts))
+
+(defun twtxt--list-thread (hash twts)
+  "Get the thread of the TWTS with HASH. Return a list with the twts of the thread."
+  (seq-filter (lambda (twt) (string= hash (cdr (assoc 'thread twt)))) twts))
+
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
 
