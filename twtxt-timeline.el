@@ -89,12 +89,12 @@
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--timeline-refresh))
-		 " ↺ Refresh timeline ")
+		 " ↺ Refresh ")
   (insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
-		 " 🖼 Show profile ")
+		 " 🖼 My profile ")
   (insert-formatted-text "\n")
   (twtxt--insert-separator))
 
@@ -120,8 +120,7 @@
 	     (thread (cdr (assoc 'thread twt)))
 	     (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twt)))))
 	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component text nick date avatar-url hash thread current-list)))
-    (twtxt--twt-component-keybindings)))
+	(twtxt--twt-component text nick date avatar-url hash thread current-list)))))
 
 
 (defun twtxt--timeline-layout ()
@@ -142,9 +141,12 @@
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt-my-profile)))
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+  (twtxt--twt-component-keybindings)
   ;; Go to the top of the buffer
   (widget-setup)
   (widget-forward 1))
+
+(add-hook 'twtxt--last-twt-hook (lambda () (twtxt--next-page)))
 
 (provide 'twtxt-timeline)
 ;;; twtxt-timeline.el ends here
