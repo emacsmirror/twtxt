@@ -40,6 +40,8 @@
 ;; integrates well with UNIX command line utilities.
 ;;; Code:
 
+(defconst twtxt--pandoc-p (executable-find "pandoc"))
+
 (defun twtxt--insert-formatted-text (text &optional size font-color background-color)
   "Inserts TEXT into the buffer with optional font SIZE, FONT-COLOR, and BACKGROUND-COLOR."
   (let ((start (point)))
@@ -67,7 +69,7 @@
 (defun twtxt--markdown-to-org-string (md-text)
   "Convert the given MD-TEXT (Markdown format) to Org-mode using Pandoc.
 Returns the converted text as a string."
-  (if (executable-find "pandoc")
+  (if twtxt--pandoc-p
       (with-temp-buffer
 	(insert (twtxt--replace-markdown-links md-text))
 	(shell-command-on-region (point-min) (point-max) "pandoc -f markdown -t org" t t)

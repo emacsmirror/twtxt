@@ -131,7 +131,7 @@
     (erase-buffer))
   (remove-overlays)
   ;; Layouts
-  (org-mode)
+  (when twtxt--pandoc-p (org-mode))
   (twtxt--insert-header)
   (twtxt--insert-timeline)
   (twtxt--insert-loading)
