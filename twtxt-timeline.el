@@ -79,23 +79,23 @@
 
 (defun twtxt--insert-header ()
   "Redraw the header."
-  (insert-formatted-text "\n")
+  (twtxt--insert-formatted-text "\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--post-buffer))
 		 :help-echo "Publish a new twtxt post."
 		 "＋ New post ")
-  (insert-formatted-text " ")
+  (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--timeline-refresh))
 		 " ↺ Refresh ")
-  (insert-formatted-text " ")
+  (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 My profile ")
-  (insert-formatted-text "\n")
+  (twtxt--insert-formatted-text "\n")
   (twtxt--insert-separator))
 
 (defun twtxt--insert-loading ()
@@ -131,6 +131,7 @@
     (erase-buffer))
   (remove-overlays)
   ;; Layouts
+  (org-mode)
   (twtxt--insert-header)
   (twtxt--insert-timeline)
   (twtxt--insert-loading)
@@ -142,7 +143,6 @@
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt-my-profile)))
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   (twtxt--twt-component-keybindings)
-  ;; Go to the top of the buffer
   (widget-setup)
   (widget-forward 1))
 

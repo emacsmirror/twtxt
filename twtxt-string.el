@@ -40,7 +40,7 @@
 ;; integrates well with UNIX command line utilities.
 ;;; Code:
 
-(defun insert-formatted-text (text &optional size font-color background-color)
+(defun twtxt--insert-formatted-text (text &optional size font-color background-color)
   "Inserts TEXT into the buffer with optional font SIZE, FONT-COLOR, and BACKGROUND-COLOR."
   (let ((start (point)))
     (insert text)
@@ -54,6 +54,36 @@
         (push `(:background ,background-color) props))
       (when props
         (put-text-property start end 'face (apply #'append props))))))
+
+(defun twtxt--replace-markdown-links (text)
+  "Replace mention format in TEXT to Markdown format."
+  (let ((output text))
+    (while (string-match "@<\\([^ ]+\\) \\([^ ]+\\)>" output)
+      (setq output
+            (replace-match (format "[%s](%s)" (match-string 1 output) (match-string 2 output))
+                           t t output)))
+    output))
+
+(defun twtxt--markdown-to-org-string (md-text)
+  "Convert the given MD-TEXT (Markdown format) to Org-mode using Pandoc.
+Returns the converted text as a string."
+  (if (executable-find "pandoc")
+      (with-temp-buffer
+	(insert (twtxt--replace-markdown-links md-text))
+	(shell-command-on-region (point-min) (point-max) "pandoc -f markdown -t org" t t)
+	(buffer-string)) md-text))
+
+(defun convert-region-to-org-mode (start end)
+  "Enable Org-mode from the cursor to the end of the buffer."
+  (interactive "r")
+  (let* ((text (buffer-substring-no-properties start end))
+         (org-text (twtxt--markdown-to-org-string text)))
+    (goto-char start)
+    (delete-region start end)
+    (insert org-text)
+    (org-mode)
+    (goto-char (point-max))
+    (org-mode)))
 
 (provide 'twtxt-string)
 ;;; twtxt-string.el ends here

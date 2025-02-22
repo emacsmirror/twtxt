@@ -62,9 +62,9 @@
 
 (defun twtxt--insert-separator ()
   "Insert a horizontal line in the buffer with full width of the window."
-  (insert-formatted-text "\n")
-  (insert-formatted-text (twtxt--string-separator))
-  (insert-formatted-text "\n"))
+  (twtxt--insert-formatted-text "\n")
+  (twtxt--insert-formatted-text (twtxt--string-separator))
+  (twtxt--insert-formatted-text "\n"))
 
 (defun twtxt--goto-reply-twt ()
   "Reply to a twtxt."
@@ -122,49 +122,49 @@
   (let ((prefix (if (eq look-and-feel 'reply) "  |  " "  " )))
     ;; direct message
     (when (eq look-and-feel 'direct-message)
-      (insert-formatted-text prefix)
-      (insert-formatted-text "🔒 Direct message from " nil "yellow")
-      (insert-formatted-text "\n"))
+      (twtxt--insert-formatted-text prefix)
+      (twtxt--insert-formatted-text "🔒 Direct message from " nil "yellow")
+      (twtxt--insert-formatted-text "\n"))
     ;; text
-    (insert-formatted-text "\n")
-    (insert-formatted-text prefix)
-    (insert-formatted-text text)
+    (twtxt--insert-formatted-text "\n")
+    (twtxt--insert-formatted-text prefix)
+    (twtxt--insert-formatted-text (twtxt--markdown-to-org-string text))
    ;; images
    (when (twtxt--image-p text)
      (progn
-       (insert-formatted-text "\n\n")
+       (twtxt--insert-formatted-text "\n\n")
        (dolist (url (get-images-urls text))
 	 (progn
 	   (twtxt--put-image-from-cache url (line-number-at-pos) 200)
-	   (insert-formatted-text "  ")))))
-   (insert-formatted-text "\n\n")
+	   (twtxt--insert-formatted-text "  ")))))
+   (twtxt--insert-formatted-text "\n")
    ;; avatar
-   (insert-formatted-text prefix)
+   (twtxt--insert-formatted-text prefix)
    (if avatar-url
        (twtxt--put-image-from-cache avatar-url (line-number-at-pos) 50)
-     (insert-formatted-text twtxt--anonymous-avatar 200 nil nil))
+     (twtxt--insert-formatted-text twtxt--anonymous-avatar 200 nil nil))
 
    ;; nick + date
-   (insert-formatted-text prefix)
-   (insert-formatted-text nick nil "yellow")
-   (insert-formatted-text prefix)
-   (insert-formatted-text date nil "#FF5733")
-   (insert-formatted-text prefix)
+   (twtxt--insert-formatted-text prefix)
+   (twtxt--insert-formatted-text nick nil "yellow")
+   (twtxt--insert-formatted-text prefix)
+   (twtxt--insert-formatted-text date nil "#FF5733")
+   (twtxt--insert-formatted-text prefix)
    (when (or (twtxt--replies-p hash twts-list) thread)
      (widget-create 'push-button
 		    :notify (lambda (&rest ignore)
 			      (setq twtxt--timeline-thread thread)
 			      (twtxt--timeline-layout))
 		    " ⎆ Go thread ")
-     (insert-formatted-text prefix)
+     (twtxt--insert-formatted-text prefix)
      (widget-create 'push-button
 		    :notify (lambda (&rest ignore) (twtxt--post-buffer thread))
 		    twtxt--text-button-reply-thread))
-   (insert-formatted-text prefix)
+   (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
 		  twtxt--text-button-reply-twt)
-   (insert-formatted-text prefix)
+   (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt---profile-layout (cdr (assoc 'author-id twt))))
 		  " Profile ")
