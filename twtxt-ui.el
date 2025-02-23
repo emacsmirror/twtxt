@@ -137,7 +137,7 @@
 	 (progn
 	   (twtxt--put-image-from-cache url (line-number-at-pos) 200)
 	   (twtxt--insert-formatted-text "  ")))))
-   (twtxt--insert-formatted-text "\n")
+   (twtxt--insert-formatted-text "\n\n")
    ;; avatar
    (twtxt--insert-formatted-text prefix)
    (if avatar-url

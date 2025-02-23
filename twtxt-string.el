@@ -58,13 +58,18 @@
         (put-text-property start end 'face (apply #'append props))))))
 
 (defun twtxt--replace-markdown-links (text)
-  "Replace mention format in TEXT to Markdown format."
-  (let ((output text))
-    (while (string-match "@<\\([^ ]+\\) \\([^ ]+\\)>" output)
-      (setq output
-            (replace-match (format "[%s](%s)" (match-string 1 output) (match-string 2 output))
-                           t t output)))
-    output))
+       "Replace @<name url> mentions in TEXT with Markdown links.
+Example: @<my alias http://example.com> → [my alias](http://example.com)."
+       (let ((regex "@<\\([^>]+\\)>"))
+	 (if (string-match regex text)
+	   (let* ((source (match-string 0 text))
+		  (items (split-string (match-string 1 text) " "))
+		  (alias (mapconcat #'identity (butlast items) " "))
+		  (url (car (last items)))) ;; `car` para extraer el string de la lista
+	     (twtxt--replace-markdown-links (replace-regexp-in-string (regexp-quote source)
+								      (format "[%s](%s)" alias url)
+								      text)))
+	   text)))
 
 (defun twtxt--markdown-to-org-string (md-text)
   "Convert the given MD-TEXT (Markdown format) to Org-mode using Pandoc.

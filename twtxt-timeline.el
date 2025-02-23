@@ -80,6 +80,9 @@
 (defun twtxt--insert-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
+  ;; (debug (concat (file-name-directory (or load-file-name buffer-file-name)) "twtxt.png"))
+  ;; (insert-image (create-image (concat (file-name-directory (or load-file-name buffer-file-name)) "twtxt.png") (line-number-at-pos) 200 nil nil :width 200) (line-number-at-pos))
+  (insert-image )
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--post-buffer))
