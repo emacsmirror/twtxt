@@ -47,7 +47,8 @@
 ;;; Code:
 
 ;; Autoload
-(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
+(defconst twtxt--root-dir (file-name-directory (or load-file-name buffer-file-name)))
+(add-to-list 'load-path twtxt--root-dir)
 (require 'twtxt-variables)
 (require 'twtxt-post)
 (require 'twtxt-feed)
