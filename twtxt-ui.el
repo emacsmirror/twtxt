@@ -51,14 +51,14 @@
 (defvar twtxt--last-twt-hook nil)
 (defconst twtxt--text-button-reply-thread " ↳ Reply thread ")
 (defconst twtxt--text-button-reply-twt " ↳ Reply twt ")
-;; (defconst twtxt--char-separator ?\u2501)
 (defconst twtxt--char-separator ?-)
+(defconst twtxt--width-separator 74)
 
 ;; Functions
 
 (defun twtxt--string-separator ()
   "Return a string with the separator character."
-  (make-string (window-body-width) twtxt--char-separator))
+  (make-string twtxt--width-separator twtxt--char-separator))
 
 (defun twtxt--insert-separator ()
   "Insert a horizontal line in the buffer with full width of the window."
@@ -117,7 +117,7 @@
   (recenter 0))
 
 
-(defun twtxt--twt-component (text nick date avatar-url hash thread twts-list &optional look-and-feel)
+(defun twtxt--twt-component (author-id text nick date avatar-url hash thread twts-list &optional look-and-feel)
   "Insert a twt component in the buffer. TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item, 'reply is a reply to a twt and 'direct-message is a direct message."
   (let ((prefix (if (eq look-and-feel 'reply) "  |  " "  " )))
     ;; direct message
@@ -150,6 +150,7 @@
    (twtxt--insert-formatted-text prefix)
    (twtxt--insert-formatted-text date nil "#FF5733")
    (twtxt--insert-formatted-text prefix)
+   (twtxt--insert-formatted-text "\n\n")
    (when (or (twtxt--replies-p hash twts-list) thread)
      (widget-create 'push-button
 		    :notify (lambda (&rest ignore)
@@ -166,8 +167,9 @@
 		  twtxt--text-button-reply-twt)
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
-		  :notify (lambda (&rest ignore) (twtxt---profile-layout (cdr (assoc 'author-id twt))))
+		  :notify (lambda (&rest ignore) (twtxt---profile-layout author-id))
 		  " Profile ")
+   (twtxt--insert-formatted-text "\n")
    ;; End of twt
    (twtxt--insert-separator)))
 

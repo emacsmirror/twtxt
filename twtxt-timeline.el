@@ -84,7 +84,7 @@
   (insert-image
    (create-image
     (concat twtxt--root-dir "twtxt.png") nil nil :width 60))
-  (twtxt--insert-formatted-text "     ")
+  (twtxt--insert-formatted-text "     twtxt.el\n\n")
   ;; Buttons
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
@@ -119,14 +119,15 @@
 		  (if twtxt--timeline-thread (twtxt--list-thread twtxt--timeline-thread current-list) current-list)
 		  (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 		  (* twtxt--twtxts-page twtxt--twtxts-per-page)))
-      (let* ((profile (twtxt--profile-by-id (cdr (assoc 'author-id twt))))
+      (let* ((author-id (cdr (assoc 'author-id twt)))
+	     (profile (twtxt--profile-by-id author-id))
 	     (nick (cdr (assoc 'nick profile)))
 	     (avatar-url (cdr (assoc 'avatar profile)))
 	     (hash (cdr (assoc 'hash twt)))
 	     (thread (cdr (assoc 'thread twt)))
 	     (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twt)))))
 	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component text nick date avatar-url hash thread current-list)))))
+	(twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
 
 
 (defun twtxt--timeline-layout ()
