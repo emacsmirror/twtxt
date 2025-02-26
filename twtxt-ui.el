@@ -6,7 +6,7 @@
 ;; Author: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -111,8 +111,8 @@
   (interactive)
   (let ((separator (twtxt--regexp-separator)))
     (search-backward-regexp separator nil t)
-    (when (search-backward-regexp separator nil t)
-      (beginning-of-line)))
+    (unless (search-backward-regexp separator nil t)
+      (goto-char (point-min))))
   (forward-line 1)
   (recenter 0))
 

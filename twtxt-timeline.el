@@ -6,7 +6,7 @@
 ;; Author: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -101,7 +101,8 @@
 		 :notify (lambda (&rest ignore)
 			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 My profile ")
-  (twtxt--insert-formatted-text "\n")
+  (twtxt--insert-formatted-text "\n\n")
+  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (c) Create | (r) Reply | (t) Thread | (q) Quit\n")
   (twtxt--insert-separator))
 
 (defun twtxt--insert-loading ()
@@ -147,7 +148,7 @@
   ;; Keybindings
   (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt-my-profile)))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   (twtxt--twt-component-keybindings)
   (widget-setup)

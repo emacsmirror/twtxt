@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -115,6 +115,7 @@
 
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
   (goto-char (point-min))
+  (twtxt--org-mode-visual-fill)
   (read-only-mode))
 
 (provide 'twtxt-profile)
