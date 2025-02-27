@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -40,7 +40,9 @@
 ;; integrates well with UNIX command line utilities.
 ;;; Code:
 
-(defun insert-formatted-text (text &optional size font-color background-color)
+(defconst twtxt--pandoc-p (executable-find "pandoc"))
+
+(defun twtxt--insert-formatted-text (text &optional size font-color background-color)
   "Inserts TEXT into the buffer with optional font SIZE, FONT-COLOR, and BACKGROUND-COLOR."
   (let ((start (point)))
     (insert text)
@@ -54,6 +56,50 @@
         (push `(:background ,background-color) props))
       (when props
         (put-text-property start end 'face (apply #'append props))))))
+
+(defun twtxt--replace-markdown-links (text)
+       "Replace @<name url> mentions in TEXT with Markdown links.
+Example: @<my alias http://example.com> → [my alias](http://example.com)."
+       (let ((regex "@<\\([^>]+\\)>"))
+	 (if (string-match regex text)
+	   (let* ((source (match-string 0 text))
+		  (items (split-string (match-string 1 text) " "))
+		  (alias (mapconcat #'identity (butlast items) " "))
+		  (url (car (last items)))) ;; `car` para extraer el string de la lista
+	     (twtxt--replace-markdown-links (replace-regexp-in-string (regexp-quote source)
+								      (format "[%s](%s)" alias url)
+								      text)))
+	   text)))
+
+(defun twtxt--add-label-to-markdown-images (text)
+  "Add a incremental label to each Markdown image in TEXT. For example 'Boo ![](https://example.com/image.png) foo ![](https://example.com/moo.jpg)' becomes 'Boo ![image 1](https://example.com/image.png) foo ![image 2](https://example.com/moo.jpg)'."
+  (let ((regex "!\\[\\([^]]+\\)\\]\\(([^)]+)\\)"))
+    (if (string-match regex text)
+	(let* ((source (match-string 0 text))
+	       (items (split-string (match-string 1 text) " "))
+	       (label (format "image %d" (1+ (length (split-string text regex)))))
+	       (url (car (last items))))))))
+
+(defun twtxt--markdown-to-org-string (md-text)
+  "Convert the given MD-TEXT (Markdown format) to Org-mode using Pandoc.
+Returns the converted text as a string."
+  (if twtxt--pandoc-p
+      (with-temp-buffer
+	(insert (twtxt--replace-markdown-links md-text))
+	(shell-command-on-region (point-min) (point-max) "pandoc -f markdown -t org" t t)
+	(buffer-string)) md-text))
+
+(defun convert-region-to-org-mode (start end)
+  "Enable Org-mode from the cursor to the end of the buffer."
+  (interactive "r")
+  (let* ((text (buffer-substring-no-properties start end))
+         (org-text (twtxt--markdown-to-org-string text)))
+    (goto-char start)
+    (delete-region start end)
+    (insert org-text)
+    (org-mode)
+    (goto-char (point-max))
+    (org-mode)))
 
 (provide 'twtxt-string)
 ;;; twtxt-string.el ends here

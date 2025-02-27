@@ -74,6 +74,10 @@ otherwise you will only be able to replicate existing threads, not create them.
 
 you can read more about the ~follower~ specification in the [[https://twtxt.dev/exts/metadata.html#follow][extension]].
 
+* markdown to org
+
+If you have ~pandoc~ installed, ~twtxt.el~ will convert the markdown to org mode.
+
 * Usage
 
 View your timeline
@@ -87,8 +91,8 @@ View your timeline
 | ~c~ | New post |
 | ~g~ | Fetch posts |
 | ~r~ | Reply to post |
-| ~R~ | Reply to thread |
 | ~t~ | Go to thread |
+| ~T~ | Reply to thread |
 | ~P~ | Go to my profile |
 | ~q~ | Quit |
 
@@ -102,6 +106,13 @@ Post a status update
 | ~C-c C-c~ | Post tweet |
 | ~C-c C-m~ | Add mention |
 | ~C-c C-k~ | Cancel tweet |
+
+View profile
+
+| Key | Action |
+|------|--------|
+| ~q~ | Quit |
+
 
 * Optional configuration
 

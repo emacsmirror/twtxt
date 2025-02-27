@@ -47,13 +47,15 @@
 ;;; Code:
 
 ;; Autoload
-(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
+(defconst twtxt--root-dir (file-name-directory (or load-file-name buffer-file-name)))
+(add-to-list 'load-path twtxt--root-dir)
 (require 'twtxt-variables)
 (require 'twtxt-post)
 (require 'twtxt-feed)
 (require 'twtxt-timeline)
 (require 'cl-lib)
 
+(defconst twtxt--max-width 74)
 (defgroup twtxt nil
   "A twtxt client for Emacs."
   :group 'twtxt)
@@ -67,7 +69,6 @@
   (interactive)
   (find-file twtxt-file))
 
-
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
@@ -75,14 +76,24 @@
   (twtxt--fetch-all-feeds-async)
   (add-hook 'twtxt-after-fetch-posts-hook (lambda ()
 					    (setq twtxt--twtxts-page 1)
-					 (twtxt--timeline-layout)) nil t))
-
+					    (setq twtxt--timeline-thread nil)
+					    (twtxt--timeline-layout)) nil t))
 
 (defun twtxt-post ()
   "POST a status update."
   (interactive)
   (twtxt-mode 1)
   (twtxt--post-buffer))
+
+(use-package visual-fill-column
+  :ensure t)
+
+(defun twtxt--org-mode-visual-fill ()
+  (setq visual-fill-column-width twtxt--max-width
+        visual-fill-column-center-text t)
+  (visual-fill-column-mode 1))
+
+(add-hook 'org-mode-hook 'twtxt--org-mode-visual-fill)
 
 (provide 'twtxt)
 ;;; twtxt.el ends here

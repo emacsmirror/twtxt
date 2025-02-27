@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -47,7 +47,7 @@
 
 (defun twtxt--insert-section (title)
   "Insert a section TITLE formatted with separators."
-  (insert-formatted-text (concat "\n━━━━━━━━━━━━━━━━━━━\n  " title "\n━━━━━━━━━━━━━━━━━━━\n")))
+  (twtxt--insert-formatted-text (concat "\n━━━━━━━━━━━━━━━━━━━\n  " title "\n━━━━━━━━━━━━━━━━━━━\n")))
 
 (defun twtxt---profile-layout (author-id)
   "Open the twtxt profile buffer."
@@ -63,58 +63,59 @@
 	 (public-key (cdr (assoc 'public-key profile))))
     ;; Avatar
     (when avatar
-      (insert-formatted-text "\n ")
+      (twtxt--insert-formatted-text "\n ")
       (twtxt--put-image-from-cache avatar (line-number-at-pos) 200))
     ;; Nick
     (when nick
-      (insert-formatted-text "\n\n")
-      (insert-formatted-text (format " 👤 Nick: ") nil "yellow")
-      (insert-formatted-text nick))
+      (twtxt--insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text (format " 👤 Nick: ") nil "yellow")
+      (twtxt--insert-formatted-text nick))
     ;; URL
     (when url
-      (insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text "\n\n")
       (if (stringp url)
 	  (progn
 	    ;; Only one URL
-	    (insert-formatted-text (format " 🔗 URL: ") nil "yellow")
-	    (insert-formatted-text url))
+	    (twtxt--insert-formatted-text (format " 🔗 URL: ") nil "yellow")
+	    (twtxt--insert-formatted-text url))
 	(progn
 	  ;; Multiple URLs
-	  (insert-formatted-text (format " 🔗 URLs:\n") nil "yellow")
+	  (twtxt--insert-formatted-text (format " 🔗 URLs:\n") nil "yellow")
 	  (dolist (item url)
-	    (insert-formatted-text (format "      - %s\n" item))))))
+	    (twtxt--insert-formatted-text (format "      - %s\n" item))))))
     (when description
-      (insert-formatted-text "\n\n")
-      (insert-formatted-text (format " 📖 Description: ") nil "yellow")
-      (insert-formatted-text description)
-      (insert-formatted-text "\n"))
+      (twtxt--insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text (format " 📖 Description: ") nil "yellow")
+      (twtxt--insert-formatted-text description)
+      (twtxt--insert-formatted-text "\n"))
     ;; Links
     (when links
       (twtxt--insert-section "📌 LINKS")
       (dolist (link links)
 	;; When name is present
-	(when (cdr (assoc 'name link)) (insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow"))
-	(insert-formatted-text (cdr (assoc 'url link)))
+	(when (cdr (assoc 'name link)) (twtxt--insert-formatted-text (concat (cdr (assoc 'name link)) " → ") nil "yellow"))
+	(twtxt--insert-formatted-text (cdr (assoc 'url link)))
 	(insert "\n")))
     ;; Follows
     (when follows
       (twtxt--insert-section (concat "👥 FOLLOWING " (format "%s" (length follows))))
       (dolist (follow follows)
-	(insert-formatted-text (concat (cdr (assoc 'name follow)) " → ") nil "yellow")
-	(insert-formatted-text (cdr (assoc 'url follow)))
+	(twtxt--insert-formatted-text (concat (cdr (assoc 'name follow)) " → ") nil "yellow")
+	(twtxt--insert-formatted-text (cdr (assoc 'url follow)))
 	(insert "\n")))
     ;; Direct Messages
     (twtxt--insert-section " 🗨 DIRECT MESSAGE")
-    (insert-formatted-text " ")
-    (insert-formatted-text (if public-key "🟢" "🔴"))
-    (insert-formatted-text (if public-key " Active" " Inactive") nil "yellow")
-    (insert-formatted-text "\n")
+    (twtxt--insert-formatted-text " ")
+    (twtxt--insert-formatted-text (if public-key "🟢" "🔴"))
+    (twtxt--insert-formatted-text (if public-key " Active" " Inactive") nil "yellow")
+    (twtxt--insert-formatted-text "\n")
     (when public-key
-      (insert-formatted-text " 🔑 Public key: " nil "yellow")
-      (insert-formatted-text public-key)))
+      (twtxt--insert-formatted-text " 🔑 Public key: " nil "yellow")
+      (twtxt--insert-formatted-text public-key)))
 
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
   (goto-char (point-min))
+  (twtxt--org-mode-visual-fill)
   (read-only-mode))
 
 (provide 'twtxt-profile)
