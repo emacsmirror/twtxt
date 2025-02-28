@@ -56,6 +56,13 @@
 
 ;; Functions
 
+(defun twtxt--insert-logo ()
+  "Insert the twtxt logo in the buffer."
+  (insert-image
+   (create-image
+    (concat twtxt--root-dir "twtxt.png") nil nil :width 60))
+  (twtxt--insert-formatted-text "     twtxt.el\n\n"))
+
 (defun twtxt--string-separator ()
   "Return a string with the separator character."
   (make-string twtxt--width-separator twtxt--char-separator))

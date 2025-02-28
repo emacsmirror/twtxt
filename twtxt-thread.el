@@ -1,4 +1,4 @@
-;;; twtxt-timeline.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
+;;; twtxt-thread.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
 ;;;
 
 ;; SPDX-License-Identifier: GPL-3.0
@@ -53,35 +53,17 @@
 (require 'cl-lib)
 
 ;; Variables
-(defvar twtxt--widget-loading-more nil)
-(defvar twtxt--twtxts-per-page 10)
-(defvar twtxt--twtxts-page 1)
-(defvar twtxt--timeline-thread nil)
-(defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
+(defvar twtxt--thread nil)
+(defconst twtxt--thread-name-buffer "*Thread | twtxt*")
 
 
 ;; Functions
-(defun twtxt--next-page ()
-  "Go to the next page of twtxts."
-  (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline)))
-    (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-    (let ((inhibit-read-only t))  ;; Allow editing
-      (widget-delete twtxt--widget-loading-more)
-      (twtxt--insert-timeline)
-      (twtxt--insert-loading))))
-
-(defun twtxt--timeline-refresh ()
-  "Refresh the timeline."
-  (interactive)
-  (setq twtxt--twtxts-page 1)
-  (twtxt-timeline))
-
-
 (defun twtxt--insert-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
   (twtxt--insert-logo)
+  (twtxt--insert-formatted-text "     twtxt.el\n\n")
   ;; Buttons
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
@@ -153,5 +135,5 @@
 
 (add-hook 'twtxt--last-twt-hook (lambda () (twtxt--next-page)))
 
-(provide 'twtxt-timeline)
+(provide 'twtxt-thread)
 ;;; twtxt-timeline.el ends here
