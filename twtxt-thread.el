@@ -41,6 +41,7 @@
 ;; integrates well with UNIX command line utilities.
 
 ;;; Code:
+(require 'seq)
 (require 'twtxt-string)
 (require 'twtxt-feed)
 (require 'twtxt-image)
@@ -54,32 +55,31 @@
 ;; Variables
 (defconst twtxt--thread-name-buffer "*Thread | twtxt*")
 
-
 ;; Functions
 (defun twtxt--quit-thread ()
   "Quit the thread buffer."
   (interactive)
-  (kill-buffer twtxt--thread-name-buffer))
+  (kill-buffer twtxt--thread-name-buffer)
+  (switch-to-buffer twtxt--timeline-name-buffer))
 
 (defun twtxt--list-thread (thread-id current-list)
   "List all twts in CURRENT-LIST with THREAD-ID."
-  (seq-filter (lambda (twt)
-              (eq thread-id (cdr (assoc 'thread twt))))
-            current-list))
+  (let* ((thread-list (seq-filter (lambda (twt)
+				    (or
+				     (equal thread-id (cdr (assoc 'hash twt)))
+				     (equal thread-id (cdr (assoc 'thread twt)))))
+				  current-list))
+	 (sorted-list (seq-sort (lambda (a b)
+				  (time-less-p (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date a))))
+					       (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date b)))))) thread-list)))
+    sorted-list))
 
 (defun twtxt--insert-thread-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
   (twtxt--insert-logo)
-  ;; Buttons
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (twtxt--quit-thread))
-		 :help-echo "Close the thread buffer."
-		 "← Back ")
-  (twtxt--insert-formatted-text "\n\n")
-  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back\n")
+  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back")
   (twtxt--insert-separator))
 
 (defun twtxt--insert-thread (thread-id current-list)
@@ -94,8 +94,13 @@
 	     (thread (cdr (assoc 'thread twt)))
 	     (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twt)))))
 	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component author-id text nick date avatar-url hash thread twts-thread))))
-  (twtxt--insert-separator))
+	(twtxt--twt-component author-id text nick date avatar-url hash thread twts-thread nil)))
+    (twtxt--insert-formatted-text "\n")
+    (widget-create 'push-button
+		   :notify (lambda (&rest ignore)
+			     (twtxt--quit-thread))
+		   :help-echo "Close the thread buffer."
+		   "← Back ")))
 
 
 (defun twtxt--thread-layout (thread-id current-list)

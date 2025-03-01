@@ -62,7 +62,8 @@
 ;; Functions
 (defun twtxt--next-page ()
   "Go to the next page of twtxts."
-  (when (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline)))
+  (when (and (string= (buffer-name) twtxt--timeline-name-buffer)
+	 (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline))))
     (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
     (let ((inhibit-read-only t))  ;; Allow editing
       (widget-delete twtxt--widget-loading-more)
@@ -98,7 +99,7 @@
 			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 My profile ")
   (twtxt--insert-formatted-text "\n\n")
-  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (c) Create | (r) Reply | (t) Thread | (q) Quit\n")
+  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (c) Create | (r) Reply | (t) Thread | (q) Quit")
   (twtxt--insert-separator))
 
 (defun twtxt--insert-loading ()

@@ -50,8 +50,7 @@
 
 ;; Variables
 (defvar twtxt--last-twt-hook nil)
-(defconst twtxt--text-button-reply-thread " ↳ Reply thread ")
-(defconst twtxt--text-button-reply-twt " ↳ Reply twt ")
+(defconst twtxt--text-button-reply-twt " ↳ Reply ")
 (defconst twtxt--char-separator ?-)
 (defconst twtxt--width-separator 74)
 
@@ -86,10 +85,10 @@
   (search-forward-regexp twtxt--text-button-reply-thread)
   (widget-button-press (point)))
 
-(defun twtxt--goto-thread ()
-  "Go to the thread of a twtxt."
+(defun twtxt--goto-thread (thread-id twts-list)
+  "Go to the thread of a twtxt. THREAD-ID is the hash of the thread, TWTS-LIST is the list of twts."
   (interactive)
-  (message "Feature not yet implemented."))
+  (twtxt--thread-layout thread-id twts-list))
 
 (defun twtxt--regexp-separator ()
   "Return the regular expression for the separator."
@@ -126,8 +125,8 @@
 
 
 (defun twtxt--twt-component (author-id text nick date avatar-url hash thread twts-list &optional look-and-feel)
-  "Insert a twt component in the buffer. TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item, 'reply is a reply to a twt and 'direct-message is a direct message."
-  (let ((prefix (if (eq look-and-feel 'reply) "  |  " "  " )))
+  "Insert a twt component in the buffer. AUTHOR-ID is the author's id, TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item  and 'direct-message is a direct message."
+  (let ((prefix "  " ))
     ;; direct message
     (when (eq look-and-feel 'direct-message)
       (twtxt--insert-formatted-text prefix)
@@ -144,8 +143,9 @@
        (dolist (url (get-images-urls text))
 	 (progn
 	   (twtxt--put-image-from-cache url (line-number-at-pos) 200)
-	   (twtxt--insert-formatted-text "  ")))))
-   (twtxt--insert-formatted-text "\n\n")
+	   (twtxt--insert-formatted-text "  ")))
+       (twtxt--insert-formatted-text "\n")))
+   (twtxt--insert-formatted-text "\n")
    ;; avatar
    (twtxt--insert-formatted-text prefix)
    (if avatar-url
@@ -159,15 +159,12 @@
    (twtxt--insert-formatted-text date nil "#FF5733")
    (twtxt--insert-formatted-text prefix)
    (twtxt--insert-formatted-text "\n\n")
-   (when (or (twtxt--replies-p hash twts-list) thread)
-     (widget-create 'push-button
-		    :notify (lambda (&rest ignore)
-			      (twtxt--thread-layout thread twts-list))
-		    " ⎆ Go thread ")
-     (twtxt--insert-formatted-text prefix)
-     (widget-create 'push-button
-		    :notify (lambda (&rest ignore) (twtxt--post-buffer thread))
-		    twtxt--text-button-reply-thread))
+   (unless (equal hash thread)
+       (when (or (twtxt--replies-p hash twts-list) thread)
+	 (widget-create 'push-button
+			:notify (lambda (&rest ignore)
+				  (twtxt--thread-layout thread twts-list))
+			" ⎆ Thread ")))
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
@@ -184,9 +181,8 @@
   "Set the keybindings for the twt component."
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
-  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
-  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt)))
-  (local-set-key (kbd "T") (lambda () (interactive) (twtxt--goto-reply-thread))))
+  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread thread twts-list)))
+  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt))))
 
 
 (provide 'twtxt-ui)
