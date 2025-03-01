@@ -46,59 +46,46 @@
 (require 'twtxt-image)
 (require 'twtxt-post)
 (require 'twtxt-profile)
-(require 'twtxt-ui)
 (require 'widget)
 (require 'wid-edit)
 (require 'url)
 (require 'cl-lib)
 
 ;; Variables
-(defvar twtxt--thread nil)
 (defconst twtxt--thread-name-buffer "*Thread | twtxt*")
 
 
 ;; Functions
-(defun twtxt--insert-header ()
+(defun twtxt--quit-thread ()
+  "Quit the thread buffer."
+  (interactive)
+  (kill-buffer twtxt--thread-name-buffer))
+
+(defun twtxt--list-thread (thread-id current-list)
+  "List all twts in CURRENT-LIST with THREAD-ID."
+  (seq-filter (lambda (twt)
+              (eq thread-id (cdr (assoc 'thread twt))))
+            current-list))
+
+(defun twtxt--insert-thread-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
   (twtxt--insert-logo)
-  (twtxt--insert-formatted-text "     twtxt.el\n\n")
   ;; Buttons
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt--post-buffer))
-		 :help-echo "Publish a new twtxt post."
-		 "＋ New post ")
-  (twtxt--insert-formatted-text " ")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (twtxt--timeline-refresh))
-		 " ↺ Refresh ")
-  (twtxt--insert-formatted-text " ")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
-		 " 🖼 My profile ")
+			   (twtxt--quit-thread))
+		 :help-echo "Close the thread buffer."
+		 "← Back ")
   (twtxt--insert-formatted-text "\n\n")
-  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (c) Create | (r) Reply | (t) Thread | (q) Quit\n")
+  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back\n")
   (twtxt--insert-separator))
 
-(defun twtxt--insert-loading ()
-  "Redraw the navigator."
-  (setq twtxt--widget-loading-more (widget-create 'push-button
-						  :notify (lambda (&rest ignore)
-							    (twtxt--next-page))
-						  " ↓ Show more ↓ ")))
-
-(defun twtxt--insert-timeline ()
-  "Redraw the timeline."
-  ;; List twtxts
-  (let ((current-list (twtxt--list-timeline)))
-    (dolist (twt (cl-subseq
-		  (if twtxt--timeline-thread (twtxt--list-thread twtxt--timeline-thread current-list) current-list)
-		  (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
-		  (* twtxt--twtxts-page twtxt--twtxts-per-page)))
+(defun twtxt--insert-thread (thread-id current-list)
+  "Draw the txt's thread. THREAD-ID is the id of the thread. CURRENT-LIST is the list of twts."
+  (let ((twts-thread (twtxt--list-thread thread-id current-list)))
+    (dolist (twt twts-thread)
       (let* ((author-id (cdr (assoc 'author-id twt)))
 	     (profile (twtxt--profile-by-id author-id))
 	     (nick (cdr (assoc 'nick profile)))
@@ -107,33 +94,29 @@
 	     (thread (cdr (assoc 'thread twt)))
 	     (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twt)))))
 	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
+	(twtxt--twt-component author-id text nick date avatar-url hash thread twts-thread))))
+  (twtxt--insert-separator))
 
 
-(defun twtxt--timeline-layout ()
-  "Create the main layout for the welcome screen."
-  (switch-to-buffer twtxt--timeline-name-buffer)
+(defun twtxt--thread-layout (thread-id current-list)
+  "Create the main layout for thread."
+  (switch-to-buffer twtxt--thread-name-buffer)
   (kill-all-local-variables)
   (let ((inhibit-read-only t))
     (erase-buffer))
   (remove-overlays)
   ;; Layouts
   (when twtxt--pandoc-p (org-mode))
-  (twtxt--insert-header)
-  (twtxt--insert-timeline)
-  (twtxt--insert-loading)
+  (twtxt--insert-thread-header)
+  (twtxt--insert-thread thread-id current-list)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
-  (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
-  (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+  (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-thread)))
   (twtxt--twt-component-keybindings)
   (widget-setup)
   (widget-forward 1))
-
-(add-hook 'twtxt--last-twt-hook (lambda () (twtxt--next-page)))
 
 (provide 'twtxt-thread)
 ;;; twtxt-timeline.el ends here

@@ -42,6 +42,7 @@
 
 ;;; Code:
 (require 'twtxt-image)
+(require 'twtxt-thread)
 (require 'widget)
 (require 'wid-edit)
 (require 'url)
@@ -161,8 +162,7 @@
    (when (or (twtxt--replies-p hash twts-list) thread)
      (widget-create 'push-button
 		    :notify (lambda (&rest ignore)
-			      (setq twtxt--timeline-thread thread)
-			      (twtxt--timeline-layout))
+			      (twtxt--thread-layout thread twts-list))
 		    " ⎆ Go thread ")
      (twtxt--insert-formatted-text prefix)
      (widget-create 'push-button

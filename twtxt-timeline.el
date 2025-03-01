@@ -56,7 +56,6 @@
 (defvar twtxt--widget-loading-more nil)
 (defvar twtxt--twtxts-per-page 10)
 (defvar twtxt--twtxts-page 1)
-(defvar twtxt--timeline-thread nil)
 (defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
 
 
@@ -77,7 +76,7 @@
   (twtxt-timeline))
 
 
-(defun twtxt--insert-header ()
+(defun twtxt--insert-timeline-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
@@ -114,7 +113,7 @@
   ;; List twtxts
   (let ((current-list (twtxt--list-timeline)))
     (dolist (twt (cl-subseq
-		  (if twtxt--timeline-thread (twtxt--list-thread twtxt--timeline-thread current-list) current-list)
+		  current-list
 		  (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 		  (* twtxt--twtxts-page twtxt--twtxts-per-page)))
       (let* ((author-id (cdr (assoc 'author-id twt)))
@@ -137,7 +136,7 @@
   (remove-overlays)
   ;; Layouts
   (when twtxt--pandoc-p (org-mode))
-  (twtxt--insert-header)
+  (twtxt--insert-timeline-header)
   (twtxt--insert-timeline)
   (twtxt--insert-loading)
   (use-local-map widget-keymap)
