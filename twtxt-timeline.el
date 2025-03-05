@@ -123,7 +123,7 @@
 	     (avatar-url (cdr (assoc 'avatar profile)))
 	     (hash (cdr (assoc 'hash twt)))
 	     (thread (cdr (assoc 'thread twt)))
-	     (date (format-time-string "%Y-%m-%d %H:%M" (encode-time (cdr (assoc 'date twt)))))
+	     (date (format-time-string "%Y-%m-%d %H:%M" (cdr (assoc 'date twt))))
 	     (text (cdr (assoc 'text twt))))
 	(twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
 

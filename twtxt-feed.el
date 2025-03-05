@@ -129,7 +129,6 @@
         (push cmd missing-commands)))
     (not missing-commands)))
 
-
 (defun twtxt--calculate-hash (feed-url timestamp message)
   "Calculate the twtxt hash using FEED-URL, TIMESTAMP, and MESSAGE.
 Returns the resulting 8-character hash as a string. This Emacs Lisp
@@ -233,22 +232,22 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
     (dolist (line list-of-lines)
       (let ((columns (split-string line "\t")))
 	(when (length= columns 2)
-	  (let ((date (parse-time-string (car columns)))
+	  ;; Make transform: string -> unixtime -> string iso8601 (format-time-string "%FT%TZ" (float-time (date-to-time "2024-12-18T14:54:56+01:00")) t))
+	  (let ((date (float-time (date-to-time (car columns))))
 		(text (replace-regexp-in-string twtxt--char-newline "\n" (cadr columns))))
 	    (when (and date text)
 	      (setq twts
 		    (cons (list
 			   (cons 'id (gensym))
 			   (cons 'thread (twtxt--get-thread-id text))
-			   (cons 'hash (twtxt--calculate-hash url (car columns) (cadr columns)))
+			   (cons 'hash (twtxt--calculate-hash url (twtxt--datetime-to-iso8601 date) (cadr columns)))
 			   (cons 'date date)
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
 
-(defun twtxt--normalize-date (date)
-  "Normalize DATE by replacing `nil` values in `parse-time-string` with defaults.
-DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
-  (mapcar (lambda (el) (or el 0)) date))
+(defun twtxt--datetime-to-iso8601 (datetime)
+  "Convert DATETIME to ISO8601 format. Parameters: DATETIME (list). Return: A string with the date in ISO8601 format."
+  (format-time-string "%FT%TZ" datetime t))
 
 (defun twtxt--list-timeline ()
   "Get the timeline of the user. RETURN: A list with the twts from all feeds sorted by date."
@@ -269,9 +268,8 @@ DATE is a list like (SEC MIN HOUR DAY MON YEAR DOW DST TZ)."
 	 (timeline-sorted
 	  (sort timeline
 		(lambda (a b)
-		  (time-less-p
-		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date b))))
-		   (apply #'encode-time (twtxt--normalize-date (cdr (assoc 'date a)))))))))
+		  (< (cdr (assoc 'date b))
+		     (cdr (assoc 'date a)))))))
     timeline-sorted))
 
 (defun twtxt--update-my-profile-on-feeds ()
