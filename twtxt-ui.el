@@ -160,11 +160,11 @@
    (twtxt--insert-formatted-text prefix)
    (twtxt--insert-formatted-text "\n\n")
    (unless (equal hash thread)
-       (when (or (twtxt--replies-p hash twts-list) thread)
-	 (widget-create 'push-button
-			:notify (lambda (&rest ignore)
-				  (twtxt--thread-layout thread twts-list))
-			" ⎆ Thread ")))
+     (when (or (twtxt--replies-p hash twts-list) thread)
+       (widget-create 'push-button
+		      :notify (lambda (&rest ignore)
+				(twtxt--thread-layout thread twts-list))
+		      " ⎆ Thread ")))
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))

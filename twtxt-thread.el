@@ -71,7 +71,7 @@
 				  current-list))
 	 (sorted-list (seq-sort (lambda (a b)
 				  (< (cdr (assoc 'date a))
-					       (cdr (assoc 'date b)))) thread-list)))
+				     (cdr (assoc 'date b)))) thread-list)))
     sorted-list))
 
 (defun twtxt--insert-thread-header ()
@@ -94,13 +94,19 @@
 	     (thread (cdr (assoc 'thread twt)))
 	     (date (format-time-string "%Y-%m-%d %H:%M" (cdr (assoc 'date twt))))
 	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component author-id text nick date avatar-url hash thread twts-thread nil)))
-    (twtxt--insert-formatted-text "\n")
+	(twtxt--twt-component author-id text nick date avatar-url hash (unless (equal thread thread-id) thread) twts-thread nil)))
+    (twtxt--insert-formatted-text "\n\n")
+    (widget-create 'push-button
+		   :notify (lambda (&rest ignore)
+			     (twtxt--post-buffer thread-id))
+		   :help-echo "Add reply to thread"
+		   " ＋ Add reply to thread ")
+    (twtxt--insert-formatted-text "\n\n")
     (widget-create 'push-button
 		   :notify (lambda (&rest ignore)
 			     (twtxt--quit-thread))
 		   :help-echo "Close the thread buffer."
-		   "← Back ")))
+		   " ← Back ")))
 
 
 (defun twtxt--thread-layout (thread-id current-list)

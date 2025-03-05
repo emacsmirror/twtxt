@@ -233,14 +233,16 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
       (let ((columns (split-string line "\t")))
 	(when (length= columns 2)
 	  ;; Make transform: string -> unixtime -> string iso8601 (format-time-string "%FT%TZ" (float-time (date-to-time "2024-12-18T14:54:56+01:00")) t))
-	  (let ((date (float-time (date-to-time (car columns))))
+	  (let ((raw-date (car columns))
+		(date (float-time (date-to-time (car columns))))
+		(raw-text (cadr columns))
 		(text (replace-regexp-in-string twtxt--char-newline "\n" (cadr columns))))
 	    (when (and date text)
 	      (setq twts
 		    (cons (list
 			   (cons 'id (gensym))
 			   (cons 'thread (twtxt--get-thread-id text))
-			   (cons 'hash (twtxt--calculate-hash url (twtxt--datetime-to-iso8601 date) (cadr columns)))
+			   (cons 'hash (twtxt--calculate-hash url raw-date raw-text))
 			   (cons 'date date)
 			   (cons 'text (twtxt--clean-thread-id text))) twts)))))))
     twts))
