@@ -1,4 +1,4 @@
-;;; twtxt-timeline.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
+;;; twtxt-thread.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
 ;;;
 
 ;; SPDX-License-Identifier: GPL-3.0
@@ -41,117 +41,93 @@
 ;; integrates well with UNIX command line utilities.
 
 ;;; Code:
+(require 'seq)
 (require 'twtxt-string)
 (require 'twtxt-feed)
 (require 'twtxt-image)
 (require 'twtxt-post)
 (require 'twtxt-profile)
-(require 'twtxt-ui)
 (require 'widget)
 (require 'wid-edit)
 (require 'url)
 (require 'cl-lib)
 
 ;; Variables
-(defvar twtxt--widget-loading-more nil)
-(defvar twtxt--twtxts-per-page 10)
-(defvar twtxt--twtxts-page 1)
-(defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
-
+(defconst twtxt--thread-name-buffer "*Thread | twtxt*")
 
 ;; Functions
-(defun twtxt--next-page ()
-  "Go to the next page of twtxts."
-  (when (and (string= (buffer-name) twtxt--timeline-name-buffer)
-	 (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline))))
-    (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-    (let ((inhibit-read-only t))  ;; Allow editing
-      (widget-delete twtxt--widget-loading-more)
-      (twtxt--insert-timeline)
-      (twtxt--insert-loading))))
-
-(defun twtxt--timeline-refresh ()
-  "Refresh the timeline."
+(defun twtxt--quit-thread ()
+  "Quit the thread buffer."
   (interactive)
-  (setq twtxt--twtxts-page 1)
-  (twtxt-timeline))
+  (kill-buffer twtxt--thread-name-buffer)
+  (switch-to-buffer twtxt--timeline-name-buffer))
 
+(defun twtxt--list-thread (thread-id current-list)
+  "List all twts in CURRENT-LIST with THREAD-ID."
+  (let* ((thread-list (seq-filter (lambda (twt)
+				    (or
+				     (equal thread-id (cdr (assoc 'hash twt)))
+				     (equal thread-id (cdr (assoc 'thread twt)))))
+				  current-list))
+	 (sorted-list (seq-sort (lambda (a b)
+				  (< (cdr (assoc 'date a))
+				     (cdr (assoc 'date b)))) thread-list)))
+    sorted-list))
 
-(defun twtxt--insert-timeline-header ()
+(defun twtxt--insert-thread-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
   (twtxt--insert-logo)
-  ;; Buttons
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (twtxt--post-buffer))
-		 :help-echo "Publish a new twtxt post."
-		 "＋ New post ")
-  (twtxt--insert-formatted-text " ")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (twtxt--timeline-refresh))
-		 " ↺ Refresh ")
-  (twtxt--insert-formatted-text " ")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
-			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
-		 " 🖼 My profile ")
-  (twtxt--insert-formatted-text "\n\n")
-  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (c) Create | (r) Reply | (t) Thread | (q) Quit")
+  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back")
   (twtxt--insert-separator))
 
-(defun twtxt--insert-loading ()
-  "Redraw the navigator."
-  (setq twtxt--widget-loading-more (widget-create 'push-button
-						  :notify (lambda (&rest ignore)
-							    (twtxt--next-page))
-						  " ↓ Show more ↓ ")))
-
-(defun twtxt--insert-timeline ()
-  "Redraw the timeline."
-  ;; List twtxts
-  (let ((current-list (twtxt--list-timeline)))
-    (dolist (twt (cl-subseq
-		  current-list
-		  (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
-		  (* twtxt--twtxts-page twtxt--twtxts-per-page)))
+(defun twtxt--insert-thread (thread-id current-list)
+  "Draw the txt's thread. THREAD-ID is the id of the thread. CURRENT-LIST is the list of twts."
+  (let ((twts-thread (twtxt--list-thread thread-id current-list)))
+    (dolist (twt twts-thread)
       (let* ((author-id (cdr (assoc 'author-id twt)))
 	     (profile (twtxt--profile-by-id author-id))
 	     (nick (cdr (assoc 'nick profile)))
 	     (avatar-url (cdr (assoc 'avatar profile)))
 	     (hash (cdr (assoc 'hash twt)))
 	     (thread (cdr (assoc 'thread twt)))
-	     (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
+	     (date (format-time-string "%Y-%m-%d %H:%M" (cdr (assoc 'date twt))))
 	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
+	(twtxt--twt-component author-id text nick date avatar-url hash (unless (equal thread thread-id) thread) twts-thread nil)))
+    (twtxt--insert-formatted-text "\n\n")
+    (widget-create 'push-button
+		   :notify (lambda (&rest ignore)
+			     (twtxt--post-buffer thread-id))
+		   :help-echo "Add reply to thread"
+		   " ＋ Add reply to thread ")
+    (twtxt--insert-formatted-text "\n\n")
+    (widget-create 'push-button
+		   :notify (lambda (&rest ignore)
+			     (twtxt--quit-thread))
+		   :help-echo "Close the thread buffer."
+		   " ← Back ")))
 
 
-(defun twtxt--timeline-layout ()
-  "Create the main layout for the welcome screen."
-  (switch-to-buffer twtxt--timeline-name-buffer)
+(defun twtxt--thread-layout (thread-id current-list)
+  "Create the main layout for thread."
+  (switch-to-buffer twtxt--thread-name-buffer)
   (kill-all-local-variables)
   (let ((inhibit-read-only t))
     (erase-buffer))
   (remove-overlays)
   ;; Layouts
   (when twtxt--pandoc-p (org-mode))
-  (twtxt--insert-timeline-header)
-  (twtxt--insert-timeline)
-  (twtxt--insert-loading)
+  (twtxt--insert-thread-header)
+  (twtxt--insert-thread thread-id current-list)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
-  (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
-  (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+  (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-thread)))
   (twtxt--twt-component-keybindings)
   (widget-setup)
   (widget-forward 1))
 
-(add-hook 'twtxt--last-twt-hook (lambda () (twtxt--next-page)))
-
-(provide 'twtxt-timeline)
+(provide 'twtxt-thread)
 ;;; twtxt-timeline.el ends here

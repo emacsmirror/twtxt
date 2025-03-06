@@ -92,7 +92,6 @@ View your timeline
 | ~g~ | Fetch posts |
 | ~r~ | Reply to post |
 | ~t~ | Go to thread |
-| ~T~ | Reply to thread |
 | ~P~ | Go to my profile |
 | ~q~ | Quit |
 
