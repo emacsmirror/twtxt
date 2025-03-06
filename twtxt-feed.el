@@ -319,6 +319,10 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
   "Get the thread of the TWTS with HASH. Return a list with the twts of the thread."
   (seq-filter (lambda (twt) (string= hash (cdr (assoc 'thread twt)))) twts))
 
+(defun twtxt--list-notifications ()
+  "Get the notifications of the user. Return a list with the twts that are replies to the user."
+  '())
+
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))
 

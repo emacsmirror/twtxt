@@ -47,6 +47,7 @@
 (require 'twtxt-post)
 (require 'twtxt-profile)
 (require 'twtxt-ui)
+(require 'twtxt-notifications)
 (require 'widget)
 (require 'wid-edit)
 (require 'url)
@@ -91,6 +92,11 @@
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
+			   (twtxt--notifications-layout))
+		 " 🕭 Notifications ")
+  (twtxt--insert-formatted-text " ")
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
 			   (twtxt--timeline-refresh))
 		 " ↺ Refresh ")
   (twtxt--insert-formatted-text " ")
@@ -99,7 +105,8 @@
 			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 My profile ")
   (twtxt--insert-formatted-text "\n\n")
-  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (c) Create | (r) Reply | (t) Thread | (q) Quit")
+  (twtxt--insert-formatted-text "Navigation: (n) Next | (p) Previous | (t) Thread\n")
+  (twtxt--insert-formatted-text "Actions: (c) Create | (r) Reply | (N) Notifications | (P) Profile | (q) Quit\n")
   (twtxt--insert-separator))
 
 (defun twtxt--insert-loading ()
@@ -147,6 +154,7 @@
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+  (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout)))
   (twtxt--twt-component-keybindings)
   (widget-setup)
   (widget-forward 1))
