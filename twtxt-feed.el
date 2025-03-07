@@ -319,9 +319,22 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
   "Get the thread of the TWTS with HASH. Return a list with the twts of the thread."
   (seq-filter (lambda (twt) (string= hash (cdr (assoc 'thread twt)))) twts))
 
-(defun twtxt--list-notifications ()
-  "Get the notifications of the user. Return a list with the twts that are replies to the user."
-  '())
+(defun twtxt--list-notifications (twts)
+  "Get the notifications of the user from the TWTS. Return a list with the twts with mentions of the user or direct messages."
+  ;; Get the twts with mentions of the user
+  (let* ((my-nick (alist-get 'nick twtxt--my-profile))
+	 (my-url (alist-get 'url twtxt--my-profile))
+	 (my-mention-string (when (and my-nick my-url) (concat "@<" my-nick " " my-url ">")))
+	 (my-direct-message-string (when (and my-nick my-url) (concat "!<" my-nick " " my-url ">")))
+	 (mentions (seq-filter (lambda (twt) (or
+					      (string-match my-mention-string (alist-get 'text twt))
+					      (string-match my-direct-message-string (alist-get 'text twt))))
+			       twts))
+	 (sort-mentions (sort mentions
+			     (lambda (a b)
+			       (< (cdr (assoc 'date b))
+				  (cdr (assoc 'date a)))))))
+    sort-mentions))
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))

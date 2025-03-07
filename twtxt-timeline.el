@@ -78,7 +78,7 @@
   (twtxt-timeline))
 
 
-(defun twtxt--insert-timeline-header ()
+(defun twtxt--insert-timeline-header (current-list)
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
@@ -92,7 +92,7 @@
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt--notifications-layout))
+			   (twtxt--notifications-layout current-list))
 		 " 🕭 Notifications ")
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
@@ -116,48 +116,48 @@
 							    (twtxt--next-page))
 						  " ↓ Show more ↓ ")))
 
-(defun twtxt--insert-timeline ()
-  "Redraw the timeline."
+(defun twtxt--insert-timeline (current-list)
+  "Redraw the timeline with CURRENT-LIST."
   ;; List twtxts
-  (let ((current-list (twtxt--list-timeline)))
-    (dolist (twt (cl-subseq
-		  current-list
-		  (* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
-		  (* twtxt--twtxts-page twtxt--twtxts-per-page)))
-      (let* ((author-id (cdr (assoc 'author-id twt)))
-	     (profile (twtxt--profile-by-id author-id))
-	     (nick (cdr (assoc 'nick profile)))
-	     (avatar-url (cdr (assoc 'avatar profile)))
-	     (hash (cdr (assoc 'hash twt)))
-	     (thread (cdr (assoc 'thread twt)))
-	     (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
-	     (text (cdr (assoc 'text twt))))
-	(twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
+  (dolist (twt (cl-subseq
+		current-list
+		(* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
+		(* twtxt--twtxts-page twtxt--twtxts-per-page)))
+    (let* ((author-id (cdr (assoc 'author-id twt)))
+	   (profile (twtxt--profile-by-id author-id))
+	   (nick (cdr (assoc 'nick profile)))
+	   (avatar-url (cdr (assoc 'avatar profile)))
+	   (hash (cdr (assoc 'hash twt)))
+	   (thread (cdr (assoc 'thread twt)))
+	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
+	   (text (cdr (assoc 'text twt))))
+      (twtxt--twt-component author-id text nick date avatar-url hash thread current-list))))
 
 
 (defun twtxt--timeline-layout ()
   "Create the main layout for the welcome screen."
-  (switch-to-buffer twtxt--timeline-name-buffer)
-  (kill-all-local-variables)
-  (let ((inhibit-read-only t))
-    (erase-buffer))
-  (remove-overlays)
-  ;; Layouts
-  (when twtxt--pandoc-p (org-mode))
-  (twtxt--insert-timeline-header)
-  (twtxt--insert-timeline)
-  (twtxt--insert-loading)
-  (use-local-map widget-keymap)
-  (display-line-numbers-mode 0)
-  ;; Keybindings
-  (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
-  (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
-  (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout)))
-  (twtxt--twt-component-keybindings)
-  (widget-setup)
-  (widget-forward 1))
+  (let ((current-list (twtxt--list-timeline)))
+    (switch-to-buffer twtxt--timeline-name-buffer)
+    (kill-all-local-variables)
+    (let ((inhibit-read-only t))
+      (erase-buffer))
+    (remove-overlays)
+    ;; Layouts
+    (when twtxt--pandoc-p (org-mode))
+    (twtxt--insert-timeline-header current-list)
+    (twtxt--insert-timeline current-list)
+    (twtxt--insert-loading)
+    (use-local-map widget-keymap)
+    (display-line-numbers-mode 0)
+    ;; Keybindings
+    (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
+    (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
+    (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
+    (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+    (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout current-list)))
+    (twtxt--twt-component-keybindings)
+    (widget-setup)
+    (widget-forward 1)))
 
 (add-hook 'twtxt--last-twt-hook (lambda () (twtxt--next-page)))
 

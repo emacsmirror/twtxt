@@ -90,25 +90,26 @@
   (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back")
   (twtxt--insert-separator))
 
-(defun twtxt--insert-notifications ()
-  "Draw the notifications list."
-  (let ((notifications-list (twtxt--list-notifications)))
-    (dolist (notification (cl-subseq
+(defun twtxt--insert-notifications (current-list)
+  "Draw the notifications list from CURRENT-LIST."
+  (let ((notifications-list (twtxt--list-notifications current-list)))
+    (dolist (twt (cl-subseq
                            notifications-list
                            (* (- twtxt--notifications-page 1) twtxt--notifications-per-page)
                            (* twtxt--notifications-page twtxt--notifications-per-page)))
-      (let* ((author-id (cdr (assoc 'author-id notification)))
-        ;; Aquí puedes personalizar cómo se muestra cada notificación
-        (twtxt--insert-formatted-text (format "Notification from %s\n" author-id))))
-    (twtxt--insert-formatted-text "\n\n")
-    (widget-create 'push-button
-                   :notify (lambda (&rest ignore)
-                             (twtxt--quit-notifications))
-                   :help-echo "Close the notifications buffer."
-                   " ← Back "))))
+      (let* ((author-id (cdr (assoc 'author-id twt)))
+	   (profile (twtxt--profile-by-id author-id))
+	   (nick (cdr (assoc 'nick profile)))
+	   (avatar-url (cdr (assoc 'avatar profile)))
+	   (hash (cdr (assoc 'hash twt)))
+	   (thread (cdr (assoc 'thread twt)))
+	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
+	   (text (cdr (assoc 'text twt))))
+      (twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
 
-(defun twtxt--notifications-layout ()
-  "Create the main layout for notifications."
+
+(defun twtxt--notifications-layout (current-list)
+  "Create the main layout for notifications from CURRENT-LIST."
   (switch-to-buffer twtxt--notifications-name-buffer)
   (kill-all-local-variables)
   (let ((inhibit-read-only t))
@@ -117,12 +118,11 @@
   ;; Layouts
   (when twtxt--pandoc-p (org-mode))
   (twtxt--insert-notifications-header)
-  (twtxt--insert-notifications)
+  (twtxt--insert-notifications current-list)
   (twtxt--insert-loading)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-notifications)))
   (widget-setup)
   (widget-forward 1))

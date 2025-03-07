@@ -134,7 +134,6 @@
       (twtxt--insert-formatted-text "\n"))
     ;; text
     (twtxt--insert-formatted-text "\n")
-    (twtxt--insert-formatted-text prefix)
     (twtxt--insert-formatted-text (twtxt--markdown-to-org-string text))
    ;; images
    (when (twtxt--image-p text)
