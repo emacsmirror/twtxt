@@ -144,10 +144,13 @@ For example, upload your twtxt file to a server or execute other commands. Confi
 
 If you have a lot of followers, fetching posts can be slow. The client is full of optimizations to remedy this, such as asynchronous fetching, avatar caching, calculations that are performed only when the data is being viewed, and other tricks. Unfortunately, Emacs has to perform time-consuming tasks such as sorting and interface construction. These tasks depend on your computing power.
 
-If you want to improve speed you will have to disable some features:
+If you want to improve speed you will have to:
 
-- Replies and threads.
 - Reduce the number of followers.
 - Reduce the number of posts per page.
 
 I hope you can improve the performance. Enjoy!
+
+* 💬 Get Help or talk with the community
+
+[[ircs://irc.libera.chat:6697/twtxt-el][IRC #twtxt-el in irc.libera.chat]] (my nick is ~@andros_dev~)
