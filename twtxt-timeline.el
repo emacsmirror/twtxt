@@ -55,9 +55,9 @@
 
 ;; Variables
 (defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
-(defvar twtxt--widget-loading-more nil)
+(defvar twtxt--timeline-widget-loading-more nil)
 (defvar twtxt--twtxts-per-page 10)
-(defvar twtxt--twtxts-page 1)
+(defvar twtxt--timeline-page 1)
 (defvar twtxt--timeline-current-list nil)
 
 
@@ -65,17 +65,17 @@
 (defun twtxt--timeline-next-page ()
   "Go to the next page of twtxts."
   (when (and (string= (buffer-name) twtxt--timeline-name-buffer)
-	     (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline))))
-    (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
+	     (< (* twtxt--timeline-page twtxt--twtxts-per-page) (length (twtxt--list-timeline))))
+    (setq twtxt--timeline-page (1+ twtxt--timeline-page))
     (let ((inhibit-read-only t)) ;; Allow editing
-      (widget-delete twtxt--widget-loading-more)
+      (widget-delete twtxt--timeline-widget-loading-more)
       (twtxt--insert-timeline)
-      (twtxt--insert-loading))))
+      (twtxt--timeline-insert-loading))))
 
 (defun twtxt--timeline-refresh ()
   "Refresh the timeline."
   (interactive)
-  (setq twtxt--twtxts-page 1)
+  (setq twtxt--timeline-page 1)
   (twtxt-timeline))
 
 
@@ -110,9 +110,9 @@
   (twtxt--insert-formatted-text "Actions: (c) Create | (r) Reply | (N) Notifications | (P) Profile | (q) Quit\n")
   (twtxt--insert-separator))
 
-(defun twtxt--insert-loading ()
+(defun twtxt--timeline-insert-loading ()
   "Redraw the navigator."
-  (setq twtxt--widget-loading-more (widget-create 'push-button
+  (setq twtxt--timeline-widget-loading-more (widget-create 'push-button
 						  :notify (lambda (&rest ignore)
 							    (twtxt--timeline-next-page))
 						  " ↓ Show more ↓ ")))
@@ -122,8 +122,8 @@
   ;; List twtxts
   (dolist (twt (cl-subseq
 		twtxt--timeline-current-list
-		(* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
-		(* twtxt--twtxts-page twtxt--twtxts-per-page)))
+		(* (- twtxt--timeline-page 1) twtxt--twtxts-per-page)
+		(* twtxt--timeline-page twtxt--twtxts-per-page)))
     (let* ((author-id (cdr (assoc 'author-id twt)))
 	   (profile (twtxt--profile-by-id author-id))
 	   (nick (cdr (assoc 'nick profile)))
@@ -147,7 +147,7 @@
   (when twtxt--pandoc-p (org-mode))
   (twtxt--insert-timeline-header)
   (twtxt--insert-timeline)
-  (twtxt--insert-loading)
+  (twtxt--timeline-insert-loading)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings

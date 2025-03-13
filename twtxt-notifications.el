@@ -54,7 +54,7 @@
 
 ;; Variables
 (defconst twtxt--notifications-name-buffer "*Notifications | twtxt*")
-(defvar twtxt--widget-loading-more nil)
+(defvar twtxt--notifications-widget-loading-more nil)
 (defvar twtxt--notifications-per-page 10)
 (defvar twtxt--notifications-page 1)
 (defvar twtxt--notifications-current-list nil)
@@ -73,13 +73,13 @@
              (< (* twtxt--notifications-page twtxt--notifications-per-page) (length twtxt--notifications-twts)))
     (setq twtxt--notifications-page (1+ twtxt--notifications-page))
     (let ((inhibit-read-only t))  ;; Allow editing
-      (widget-delete twtxt--widget-loading-more)
+      (widget-delete twtxt--notifications-widget-loading-more)
       (twtxt--insert-notifications)
-      (twtxt--insert-loading))))
+      (twtxt--notifications-insert-loading))))
 
-(defun twtxt--insert-loading ()
+(defun twtxt--notifications-insert-loading ()
   "Redraw the navigator."
-  (setq twtxt--widget-loading-more (widget-create 'push-button
+  (setq twtxt--notifications-widget-loading-more (widget-create 'push-button
                                                   :notify (lambda (&rest ignore)
                                                             (twtxt--notifications-next-page))
                                                   " ↓ Show more ↓ ")))
@@ -123,7 +123,7 @@
   (when twtxt--pandoc-p (org-mode))
   (twtxt--insert-notifications-header)
   (twtxt--insert-notifications)
-  (twtxt--insert-loading)
+  (twtxt--notifications-insert-loading)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
