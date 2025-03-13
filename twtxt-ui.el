@@ -51,6 +51,7 @@
 ;; Variables
 (defvar twtxt--last-twt-hook nil)
 (defconst twtxt--text-button-reply-twt " ↳ Reply ")
+(defconst twtxt--text-button-thread " ⎆ Thread ")
 (defconst twtxt--char-separator ?-)
 (defconst twtxt--width-separator 74)
 
@@ -79,16 +80,11 @@
   (search-forward-regexp twtxt--text-button-reply-twt)
   (widget-button-press (point)))
 
-(defun twtxt--goto-reply-thread ()
-  "Reply to a thread."
-  (search-backward-regexp twtxt--char-separator)
-  (search-forward-regexp twtxt--text-button-reply-thread)
-  (widget-button-press (point)))
-
-(defun twtxt--goto-thread (thread-id twts-list)
+(defun twtxt--goto-thread ()
   "Go to the thread of a twtxt. THREAD-ID is the hash of the thread, TWTS-LIST is the list of twts."
-  (interactive)
-  (twtxt--thread-layout thread-id twts-list))
+  (search-backward-regexp twtxt--char-separator)
+  (search-forward-regexp twtxt--text-button-thread)
+  (widget-button-press (point)))
 
 (defun twtxt--regexp-separator ()
   "Return the regular expression for the separator."
@@ -167,7 +163,7 @@
        (widget-create 'push-button
 		      :notify (lambda (&rest ignore)
 				(twtxt--thread-layout thread twts-list))
-		      " ⎆ Thread ")))
+		      twtxt--text-button-thread)))
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
@@ -181,10 +177,10 @@
    (twtxt--insert-separator)))
 
 (defun twtxt--twt-component-keybindings ()
-  "Set the keybindings for the twt component."
+  "Set the keybindings for the twt component. THREAD is the hash of the thread."
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
-  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread thread twts-list)))
+  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
   (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt))))
 
 
