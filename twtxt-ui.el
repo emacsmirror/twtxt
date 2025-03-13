@@ -6,7 +6,7 @@
 ;; Author: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -125,12 +125,16 @@
 
 
 (defun twtxt--twt-component (author-id text nick date avatar-url hash thread twts-list &optional look-and-feel)
-  "Insert a twt component in the buffer. AUTHOR-ID is the author's id, TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item  and 'direct-message is a direct message."
+  "Insert a twt component in the buffer. AUTHOR-ID is the author's id, TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item  and 'direct-message is a direct message and 'mention is someone who mentions you."
   (let ((prefix "  " ))
     ;; direct message
     (when (eq look-and-feel 'direct-message)
       (twtxt--insert-formatted-text prefix)
       (twtxt--insert-formatted-text "🔒 Direct message from " nil "yellow")
+      (twtxt--insert-formatted-text "\n"))
+    (when (eq look-and-feel 'mention)
+      (twtxt--insert-formatted-text prefix)
+      (twtxt--insert-formatted-text "📢 Mention" nil "yellow")
       (twtxt--insert-formatted-text "\n"))
     ;; text
     (twtxt--insert-formatted-text "\n")

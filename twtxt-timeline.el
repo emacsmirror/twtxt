@@ -6,7 +6,7 @@
 ;; Author: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -54,19 +54,20 @@
 (require 'cl-lib)
 
 ;; Variables
+(defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
 (defvar twtxt--widget-loading-more nil)
 (defvar twtxt--twtxts-per-page 10)
 (defvar twtxt--twtxts-page 1)
-(defconst twtxt--timeline-name-buffer "*Timeline | twtxt*")
+(defvar twtxt--timeline-current-list nil)
 
 
 ;; Functions
-(defun twtxt--next-page ()
+(defun twtxt--timeline-next-page ()
   "Go to the next page of twtxts."
   (when (and (string= (buffer-name) twtxt--timeline-name-buffer)
-	 (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline))))
+	     (< (* twtxt--twtxts-page twtxt--twtxts-per-page) (length (twtxt--list-timeline))))
     (setq twtxt--twtxts-page (1+ twtxt--twtxts-page))
-    (let ((inhibit-read-only t))  ;; Allow editing
+    (let ((inhibit-read-only t)) ;; Allow editing
       (widget-delete twtxt--widget-loading-more)
       (twtxt--insert-timeline)
       (twtxt--insert-loading))))
@@ -78,7 +79,7 @@
   (twtxt-timeline))
 
 
-(defun twtxt--insert-timeline-header (current-list)
+(defun twtxt--insert-timeline-header ()
   "Redraw the header."
   (twtxt--insert-formatted-text "\n")
   ;; Logo
@@ -92,7 +93,7 @@
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt--notifications-layout current-list))
+			   (twtxt--notifications-layout twtxt--timeline-current-list))
 		 " 🕭 Notifications ")
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
@@ -113,14 +114,14 @@
   "Redraw the navigator."
   (setq twtxt--widget-loading-more (widget-create 'push-button
 						  :notify (lambda (&rest ignore)
-							    (twtxt--next-page))
+							    (twtxt--timeline-next-page))
 						  " ↓ Show more ↓ ")))
 
-(defun twtxt--insert-timeline (current-list)
-  "Redraw the timeline with CURRENT-LIST."
+(defun twtxt--insert-timeline ()
+  "Redraw the timeline with TWTXT--TIMELINE-CURRENT-LIST."
   ;; List twtxts
   (dolist (twt (cl-subseq
-		current-list
+		twtxt--timeline-current-list
 		(* (- twtxt--twtxts-page 1) twtxt--twtxts-per-page)
 		(* twtxt--twtxts-page twtxt--twtxts-per-page)))
     (let* ((author-id (cdr (assoc 'author-id twt)))
@@ -131,35 +132,36 @@
 	   (thread (cdr (assoc 'thread twt)))
 	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
 	   (text (cdr (assoc 'text twt))))
-      (twtxt--twt-component author-id text nick date avatar-url hash thread current-list))))
+      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--timeline-current-list))))
 
 
 (defun twtxt--timeline-layout ()
   "Create the main layout for the welcome screen."
-  (let ((current-list (twtxt--list-timeline)))
-    (switch-to-buffer twtxt--timeline-name-buffer)
-    (kill-all-local-variables)
-    (let ((inhibit-read-only t))
-      (erase-buffer))
-    (remove-overlays)
-    ;; Layouts
-    (when twtxt--pandoc-p (org-mode))
-    (twtxt--insert-timeline-header current-list)
-    (twtxt--insert-timeline current-list)
-    (twtxt--insert-loading)
-    (use-local-map widget-keymap)
-    (display-line-numbers-mode 0)
-    ;; Keybindings
-    (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
-    (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
-    (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
-    (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
-    (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout current-list)))
-    (twtxt--twt-component-keybindings)
-    (widget-setup)
-    (widget-forward 1)))
+  (switch-to-buffer twtxt--timeline-name-buffer)
+  (kill-all-local-variables)
+  (setq twtxt--timeline-current-list (twtxt--list-timeline))
+  (let ((inhibit-read-only t))
+    (erase-buffer))
+  (remove-overlays)
+  ;; Layouts
+  (when twtxt--pandoc-p (org-mode))
+  (twtxt--insert-timeline-header)
+  (twtxt--insert-timeline)
+  (twtxt--insert-loading)
+  (use-local-map widget-keymap)
+  (display-line-numbers-mode 0)
+  ;; Keybindings
+  (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
+  (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
+  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+  (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout twtxt--timeline-current-list)))
+  (twtxt--twt-component-keybindings)
+  (twtxt--org-mode-visual-fill)
+  (widget-setup)
+  (widget-forward 1))
 
-(add-hook 'twtxt--last-twt-hook (lambda () (twtxt--next-page)))
+(add-hook 'twtxt--last-twt-hook (lambda () (twtxt--timeline-next-page)))
 
 (provide 'twtxt-timeline)
 ;;; twtxt-timeline.el ends here

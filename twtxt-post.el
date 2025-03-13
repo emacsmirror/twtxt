@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -80,6 +80,7 @@
 (defun twtxt--post-buffer (&optional hash)
   "Open a temporary buffer for writing and posting a new status update."
   (setq twtxt--mentions nil)
+  (twtxt--org-mode-visual-fill)
   (let ((buffer-name "*New post | twtxt*"))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)

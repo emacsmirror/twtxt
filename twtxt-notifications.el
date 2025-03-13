@@ -6,7 +6,7 @@
 ;; Author: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -57,6 +57,8 @@
 (defvar twtxt--widget-loading-more nil)
 (defvar twtxt--notifications-per-page 10)
 (defvar twtxt--notifications-page 1)
+(defvar twtxt--notifications-current-list nil)
+(defvar twtxt--notifications-twts nil)
 
 ;; Functions
 (defun twtxt--quit-notifications ()
@@ -65,10 +67,10 @@
   (kill-buffer twtxt--notifications-name-buffer)
   (switch-to-buffer twtxt--timeline-name-buffer))
 
-(defun twtxt--next-page ()
+(defun twtxt--notifications-next-page ()
   "Go to the next page of notifications."
   (when (and (string= (buffer-name) twtxt--notifications-name-buffer)
-             (< (* twtxt--notifications-page twtxt--notifications-per-page) (length (twtxt--list-notifications))))
+             (< (* twtxt--notifications-page twtxt--notifications-per-page) (length twtxt--notifications-twts)))
     (setq twtxt--notifications-page (1+ twtxt--notifications-page))
     (let ((inhibit-read-only t))  ;; Allow editing
       (widget-delete twtxt--widget-loading-more)
@@ -79,7 +81,7 @@
   "Redraw the navigator."
   (setq twtxt--widget-loading-more (widget-create 'push-button
                                                   :notify (lambda (&rest ignore)
-                                                            (twtxt--next-page))
+                                                            (twtxt--notifications-next-page))
                                                   " ↓ Show more ↓ ")))
 
 (defun twtxt--insert-notifications-header ()
@@ -90,42 +92,47 @@
   (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back")
   (twtxt--insert-separator))
 
-(defun twtxt--insert-notifications (current-list)
-  "Draw the notifications list from CURRENT-LIST."
-  (let ((notifications-list (twtxt--list-notifications current-list)))
-    (dolist (twt (cl-subseq
-                           notifications-list
-                           (* (- twtxt--notifications-page 1) twtxt--notifications-per-page)
-                           (* twtxt--notifications-page twtxt--notifications-per-page)))
-      (let* ((author-id (cdr (assoc 'author-id twt)))
+(defun twtxt--insert-notifications ()
+  "Draw the notifications list."
+  (dolist (twt (cl-subseq
+                twtxt--notifications-twts
+                (* (- twtxt--notifications-page 1) twtxt--notifications-per-page)
+                (* twtxt--notifications-page twtxt--notifications-per-page)))
+    (let* ((author-id (cdr (assoc 'author-id twt)))
 	   (profile (twtxt--profile-by-id author-id))
 	   (nick (cdr (assoc 'nick profile)))
 	   (avatar-url (cdr (assoc 'avatar profile)))
 	   (hash (cdr (assoc 'hash twt)))
 	   (thread (cdr (assoc 'thread twt)))
 	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
-	   (text (cdr (assoc 'text twt))))
-      (twtxt--twt-component author-id text nick date avatar-url hash thread current-list)))))
+	   (text (cdr (assoc 'text twt)))
+	   (type (alist-get 'type twt)))
+      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--notifications-current-list type))))
 
 
 (defun twtxt--notifications-layout (current-list)
   "Create the main layout for notifications from CURRENT-LIST."
   (switch-to-buffer twtxt--notifications-name-buffer)
   (kill-all-local-variables)
+  (setq twtxt--notifications-current-list current-list)
+  (setq twtxt--notifications-twts (twtxt--list-notifications twtxt--notifications-current-list))
   (let ((inhibit-read-only t))
     (erase-buffer))
   (remove-overlays)
   ;; Layouts
   (when twtxt--pandoc-p (org-mode))
   (twtxt--insert-notifications-header)
-  (twtxt--insert-notifications current-list)
+  (twtxt--insert-notifications)
   (twtxt--insert-loading)
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
   (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-notifications)))
+  (twtxt--org-mode-visual-fill)
   (widget-setup)
   (widget-forward 1))
+
+(add-hook 'twtxt--last-twt-hook (lambda () (twtxt--notifications-next-page)))
 
 (provide 'twtxt-notifications)
 ;;; twtxt-notifications.el ends here

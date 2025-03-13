@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -72,7 +72,7 @@
       (twtxt--insert-formatted-text nick))
     ;; URL
     (when url
-      (twtxt--insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text "\n")
       (if (stringp url)
 	  (progn
 	    ;; Only one URL
@@ -84,7 +84,7 @@
 	  (dolist (item url)
 	    (twtxt--insert-formatted-text (format "      - %s\n" item))))))
     (when description
-      (twtxt--insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text "\n")
       (twtxt--insert-formatted-text (format " 📖 Description: ") nil "yellow")
       (twtxt--insert-formatted-text description)
       (twtxt--insert-formatted-text "\n"))
@@ -114,6 +114,7 @@
       (twtxt--insert-formatted-text public-key)))
 
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
+  (twtxt--org-mode-visual-fill)
   (goto-char (point-min))
   (twtxt--org-mode-visual-fill)
   (read-only-mode))
