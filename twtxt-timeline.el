@@ -90,11 +90,16 @@
 			   (twtxt--post-buffer))
 		 :help-echo "Publish a new twtxt post."
 		 "＋ New post ")
-  (twtxt--insert-formatted-text " ")
+  (twtxt--insert-formatted-text "\n\n")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
 			   (twtxt--notifications-layout twtxt--timeline-current-list))
 		 " 🕭 Notifications ")
+  (twtxt--insert-formatted-text " ")
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
+			   (message "Not implement this yet."))
+		 " 🖂 Direct messages ")
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)

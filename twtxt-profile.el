@@ -53,6 +53,8 @@
   "Open the twtxt profile buffer."
   (interactive)
   (switch-to-buffer twtxt--profile-buffer)
+  (twtxt--insert-logo)
+  (twtxt--insert-formatted-text "Actions: (b) Back\n")
   (let* ((profile (twtxt--profile-by-id author-id))
 	 (avatar (cdr (assoc 'avatar profile)))
 	 (nick (cdr (assoc 'nick profile)))
@@ -113,7 +115,7 @@
       (twtxt--insert-formatted-text " 🔑 Public key: " nil "yellow")
       (twtxt--insert-formatted-text public-key)))
 
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
+  (local-set-key (kbd "b") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
   (goto-char (point-min))
   (twtxt-mode 1)
   (read-only-mode))
