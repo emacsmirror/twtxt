@@ -110,30 +110,30 @@
 (defun twtxt--post-confirm ()
   "Post the content of the buffer as a new status update."
   (interactive)
-  (post-start (save-excursion
-                (goto-char (point-min))
-                (forward-line twtxt--post-help-lines) ;; Jump over help lines.
-                (point)))
-  (post (buffer-substring-no-properties post-start (point-max)))
-  (when (and post (not (string-blank-p post)))
-    ;; Add post to twtxt file
-    (append-to-file
-     (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
-     nil
-     twtxt-file)
-    ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
-    (dolist (mention-url twtxt--mentions)
-      (request
-	mention-url
-	:type "GET"
-	:headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
-		   ("Content-Type" . "text/plain; charset=utf-8"))
-	:error (lambda (&rest _) (message "Failed to mention %s" mention-url))))
-    ;; Run hook
-    (run-hooks 'twtxt-post-tweet-hook)
-    ;; Feedback
-    (message "Posted: %s" post))
-  (kill-buffer))
+  (let* ((post-start (save-excursion
+                       (goto-char (point-min))
+                       (forward-line twtxt--post-help-lines) ;; Jump over help lines.
+                       (point)))
+         (post (buffer-substring-no-properties post-start (point-max))))
+    (when (and post (not (string-blank-p post)))
+      ;; Add post to twtxt file
+      (append-to-file
+       (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
+       nil
+       twtxt-file)
+      ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
+      (dolist (mention-url twtxt--mentions)
+	(request
+	  mention-url
+	  :type "GET"
+	  :headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
+		     ("Content-Type" . "text/plain; charset=utf-8"))))
+      ;; Run hook
+      (run-hooks 'twtxt-post-tweet-hook)
+      ;; Feedback
+      (message "Posted: %s" post))
+    (kill-buffer)))
+
 
 (defun twtxt--post-cancel ()
   "Cancel and close the new post buffer without posting."
