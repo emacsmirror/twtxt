@@ -18,20 +18,24 @@ You will not need to use the official terminal client or other complex solutions
 - Mention, and notify, other users.
 - Transform Markdown syntax to Org.
 
-#+ATTR_HTML: :width 500px
+#+ATTR_HTML: :width 650px
 #+ATTR_HTML: :align center
+#+CAPTION: Timeline
 [[./screenshots/screenshot-1.jpg]]
 
-#+ATTR_HTML: :width 500px
+#+ATTR_HTML: :width 650px
 #+ATTR_HTML: :align center
+#+CAPTION: Mention
 [[./screenshots/screenshot-2.jpg]]
 
-#+ATTR_HTML: :width 500px
+#+ATTR_HTML: :width 650px
 #+ATTR_HTML: :align center
+#+CAPTION: Profile
 [[./screenshots/screenshot-3.jpg]]
 
-#+ATTR_HTML: :width 500px
+#+ATTR_HTML: :width 650px
 #+ATTR_HTML: :align center
+#+CAPTION: New post
 [[./screenshots/screenshot-4.jpg]]
 
 * Install
