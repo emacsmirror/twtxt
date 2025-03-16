@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -53,6 +53,8 @@
   "Open the twtxt profile buffer."
   (interactive)
   (switch-to-buffer twtxt--profile-buffer)
+  (twtxt--insert-logo)
+  (twtxt--insert-formatted-text "Actions: (b) Back\n")
   (let* ((profile (twtxt--profile-by-id author-id))
 	 (avatar (cdr (assoc 'avatar profile)))
 	 (nick (cdr (assoc 'nick profile)))
@@ -72,7 +74,7 @@
       (twtxt--insert-formatted-text nick))
     ;; URL
     (when url
-      (twtxt--insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text "\n")
       (if (stringp url)
 	  (progn
 	    ;; Only one URL
@@ -84,7 +86,7 @@
 	  (dolist (item url)
 	    (twtxt--insert-formatted-text (format "      - %s\n" item))))))
     (when description
-      (twtxt--insert-formatted-text "\n\n")
+      (twtxt--insert-formatted-text "\n")
       (twtxt--insert-formatted-text (format " 📖 Description: ") nil "yellow")
       (twtxt--insert-formatted-text description)
       (twtxt--insert-formatted-text "\n"))
@@ -113,9 +115,9 @@
       (twtxt--insert-formatted-text " 🔑 Public key: " nil "yellow")
       (twtxt--insert-formatted-text public-key)))
 
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
+  (local-set-key (kbd "b") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
   (goto-char (point-min))
-  (twtxt--org-mode-visual-fill)
+  (twtxt-mode 1)
   (read-only-mode))
 
 (provide 'twtxt-profile)

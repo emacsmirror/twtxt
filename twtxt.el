@@ -6,7 +6,7 @@
 ;; Colaborator: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column 2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -62,7 +62,14 @@
 
 (define-minor-mode twtxt-mode
   "Minor mode for enhancing the twtxt experience."
-  :lighter " twtxt")
+  :lighter " twtxt"
+  :global nil
+  (if twtxt-mode
+      (progn
+	(setq visual-fill-column-center-text t)
+	(setq visual-fill-column-width twtxt--max-width)
+	(visual-fill-column-mode 1))
+    (visual-fill-column-mode -1)))
 
 (defun twtxt-open-file ()
   "Open twtxt file."
@@ -72,7 +79,6 @@
 (defun twtxt-timeline ()
   "View your timeline."
   (interactive)
-  (twtxt-mode 1)
   (twtxt--fetch-all-feeds-async)
   (add-hook 'twtxt-after-fetch-posts-hook (lambda ()
 					    (setq twtxt--twtxts-page 1)
@@ -82,18 +88,7 @@
 (defun twtxt-post ()
   "POST a status update."
   (interactive)
-  (twtxt-mode 1)
   (twtxt--post-buffer))
-
-(use-package visual-fill-column
-  :ensure t)
-
-(defun twtxt--org-mode-visual-fill ()
-  (setq visual-fill-column-width twtxt--max-width
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-
-(add-hook 'org-mode-hook 'twtxt--org-mode-visual-fill)
 
 (provide 'twtxt)
 ;;; twtxt.el ends here

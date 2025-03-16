@@ -5,7 +5,7 @@
 ;; Author: Andros <https://andros.dev>
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -318,6 +318,33 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 (defun twtxt--list-thread (hash twts)
   "Get the thread of the TWTS with HASH. Return a list with the twts of the thread."
   (seq-filter (lambda (twt) (string= hash (cdr (assoc 'thread twt)))) twts))
+
+(defun twtxt--list-notifications (twts)
+  "Get the notifications of the user from the TWTS. Return a list with the twts with mentions of the user or direct messages."
+  (let* ((my-nick (alist-get 'nick twtxt--my-profile))
+	 (my-url (alist-get 'url twtxt--my-profile))
+	 (my-mention-string (when (and my-nick my-url) (concat "@<" my-nick " " my-url ">")))
+	 (my-direct-message-string (when (and my-nick my-url) (concat "!<" my-nick " " my-url ">")))
+	 (mentions (seq-filter (lambda (twt) (or
+					      (string-match my-mention-string (alist-get 'text twt))
+					      (string-match my-direct-message-string (alist-get 'text twt))))
+			       twts))
+	 (mentions-with-type (mapcar (lambda (twt)
+				       (append twt (list (cons 'type 'mention))))
+				     mentions))
+	 (sort-mentions (sort mentions-with-type
+			      (lambda (a b)
+				(< (cdr (assoc 'date b))
+				   (cdr (assoc 'date a))))))
+	 (direct-messages (seq-filter (lambda (twt) (string-match my-direct-message-string (alist-get 'text twt))) twts))
+	 (direct-messages-with-type (mapcar (lambda (twt)
+					      (append twt (list (cons 'type 'direct-message))))
+					    direct-messages))
+	 (sort-direct-messages (sort direct-messages-with-type
+				     (lambda (a b)
+				       (< (cdr (assoc 'date b))
+					  (cdr (assoc 'date a)))))))
+    (append sort-mentions sort-direct-messages)))
 
 ;; Initialize
 (setq twtxt--my-profile (twtxt--get-my-profile))

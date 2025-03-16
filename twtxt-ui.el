@@ -6,7 +6,7 @@
 ;; Author: Andros - https://andros.dev
 ;; Version: 0.2
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "1.12"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -51,6 +51,7 @@
 ;; Variables
 (defvar twtxt--last-twt-hook nil)
 (defconst twtxt--text-button-reply-twt " ↳ Reply ")
+(defconst twtxt--text-button-thread " ⎆ Thread ")
 (defconst twtxt--char-separator ?-)
 (defconst twtxt--width-separator 74)
 
@@ -79,16 +80,11 @@
   (search-forward-regexp twtxt--text-button-reply-twt)
   (widget-button-press (point)))
 
-(defun twtxt--goto-reply-thread ()
-  "Reply to a thread."
-  (search-backward-regexp twtxt--char-separator)
-  (search-forward-regexp twtxt--text-button-reply-thread)
-  (widget-button-press (point)))
-
-(defun twtxt--goto-thread (thread-id twts-list)
+(defun twtxt--goto-thread ()
   "Go to the thread of a twtxt. THREAD-ID is the hash of the thread, TWTS-LIST is the list of twts."
-  (interactive)
-  (twtxt--thread-layout thread-id twts-list))
+  (search-backward-regexp twtxt--char-separator)
+  (search-forward-regexp twtxt--text-button-thread)
+  (widget-button-press (point)))
 
 (defun twtxt--regexp-separator ()
   "Return the regular expression for the separator."
@@ -125,16 +121,19 @@
 
 
 (defun twtxt--twt-component (author-id text nick date avatar-url hash thread twts-list &optional look-and-feel)
-  "Insert a twt component in the buffer. AUTHOR-ID is the author's id, TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item  and 'direct-message is a direct message."
+  "Insert a twt component in the buffer. AUTHOR-ID is the author's id, TEXT is the twt text, NICK is the author's nickname, DATE is the date of the twt, AVATAR-URL is the URL of the author's avatar, HASH is the hash of the twt, THREAD is the hash of the thread, TWTS-LIST is the list of twts. LOOK-AND-FEEL is the look and feel of the twt: nil is a simple item  and 'direct-message is a direct message and 'mention is someone who mentions you."
   (let ((prefix "  " ))
     ;; direct message
     (when (eq look-and-feel 'direct-message)
       (twtxt--insert-formatted-text prefix)
       (twtxt--insert-formatted-text "🔒 Direct message from " nil "yellow")
       (twtxt--insert-formatted-text "\n"))
+    (when (eq look-and-feel 'mention)
+      (twtxt--insert-formatted-text prefix)
+      (twtxt--insert-formatted-text "📢 Mention" nil "yellow")
+      (twtxt--insert-formatted-text "\n"))
     ;; text
     (twtxt--insert-formatted-text "\n")
-    (twtxt--insert-formatted-text prefix)
     (twtxt--insert-formatted-text (twtxt--markdown-to-org-string text))
    ;; images
    (when (twtxt--image-p text)
@@ -164,7 +163,7 @@
        (widget-create 'push-button
 		      :notify (lambda (&rest ignore)
 				(twtxt--thread-layout thread twts-list))
-		      " ⎆ Thread ")))
+		      twtxt--text-button-thread)))
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
@@ -178,10 +177,10 @@
    (twtxt--insert-separator)))
 
 (defun twtxt--twt-component-keybindings ()
-  "Set the keybindings for the twt component."
+  "Set the keybindings for the twt component. THREAD is the hash of the thread."
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
-  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread thread twts-list)))
+  (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
   (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt))))
 
 
