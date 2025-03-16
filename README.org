@@ -3,7 +3,20 @@
 [[https://melpa.org/#/twtxt][https://melpa.org/packages/twtxt-badge.svg]]
 [[https://img.shields.io/badge/GNU%20Emacs-25.1-b48ead.svg]]
 
-A twtxt client for Emacs
+~twtxt.el~ is a twtxt client for Emacs.
+
+You can publish posts, view your follower timeline, read and reply to threads, view profiles, see when you are mentioned and write direct messages.
+
+You will not need to use the official terminal client or other complex solutions to interact with the community. Where you go with Emacs, you go with twtxt.
+
+- Publish posts (twts).
+- Read chronologically the publications of those you follow.
+- Notifications of mentions.
+- Read and write in threads.
+- Write secret messages (direct messages).
+- View profiles.
+- Mention, and notify, other users.
+- Transform Markdown syntax to Org.
 
 * Install
 
@@ -59,9 +72,9 @@ You should add your followers to the ~twtxt-file~.
 
 You can read more about the ~threads~ specification in the [[https://twtxt.dev/#mentions-and-threads][extension]].
 
-* replies
+* Replies
 
-optionally, if you want to replicate a post, you need to install the following unix tools:
+Optionally, if you want to replicate a post, you need to install the following unix tools:
 
 - ~b2sum~
 - ~awk~
@@ -70,48 +83,19 @@ optionally, if you want to replicate a post, you need to install the following u
 - ~tr~
 - ~tail~
 
-otherwise you will only be able to replicate existing threads, not create them.
+Otherwise you will only be able to replicate existing threads, not create them.
 
-you can read more about the ~follower~ specification in the [[https://twtxt.dev/exts/metadata.html#follow][extension]].
+You can read more about the ~follower~ specification in the [[https://twtxt.dev/exts/metadata.html#follow][extension]].
 
-* markdown to org
+* Markdown to org
 
 If you have ~pandoc~ installed, ~twtxt.el~ will convert the markdown to org mode.
 
 * Usage
 
-View your timeline
+Open the timeline buffer with ~M-x twtxt-timeline~.
 
-~M-x twtxt-timeline~
-
-| Key | Action |
-|------|--------|
-| ~n~ | Next post |
-| ~p~ | Previous post |
-| ~c~ | New post |
-| ~g~ | Fetch posts |
-| ~r~ | Reply to post |
-| ~t~ | Go to thread |
-| ~P~ | Go to my profile |
-| ~q~ | Quit |
-
-
-Post a status update
-
-~M-x twtxt-post~
-
-| Key | Action |
-|------|--------|
-| ~C-c C-c~ | Post tweet |
-| ~C-c C-m~ | Add mention |
-| ~C-c C-k~ | Cancel tweet |
-
-View profile
-
-| Key | Action |
-|------|--------|
-| ~q~ | Quit |
-
+Post a tweet with ~M-x twtxt-post~.
 
 * Optional configuration
 
@@ -127,6 +111,7 @@ You can use the following hooks to perform additional actions automatically:
 
 | Name | Description |
 |------|------------|
+| ~twtxt-mode-hook~  | Hook run after enabling ~twtxt-mode~. |
 | ~twtxt-post-tweet-hook~ | Hook run after posting a tweet. |
 | ~twtxt-after-fetch-posts-hook~ | Hook run after fetching posts. |
 
@@ -138,6 +123,12 @@ For example, upload your twtxt file to a server or execute other commands. Confi
   									 twtxt-file
   									 "user@server:/your/path/twtxt.txt"
   									 ) nil 0)))
+#+END_SRC
+
+Or maybe you want to disable the spell checker:
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'twtxt-mode-hook (lambda () (flyspell-mode -1)))
 #+END_SRC
 
 * It's slow when I open the timeline
