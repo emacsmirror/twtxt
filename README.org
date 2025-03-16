@@ -18,10 +18,17 @@ You will not need to use the official terminal client or other complex solutions
 - Mention, and notify, other users.
 - Transform Markdown syntax to Org.
 
-[[screenshots/screenshot-1.jpg][Timeline]]
-[[screenshots/screenshot-2.jpg][Mention]]
-[[screenshots/screenshot-3.jpg][Profile]]
-[[screenshots/screenshot-4.jpg][New post]]
+#+ATTR_HTML: :width 300px
+[[./screenshots/screenshot-1.jpg]]
+
+#+ATTR_HTML: :width 300px
+[[./screenshots/screenshot-2.jpg]]
+
+#+ATTR_HTML: :width 300px
+[[./screenshots/screenshot-3.jpg]]
+
+#+ATTR_HTML: :width 300px
+[[./screenshots/screenshot-4.jpg]]
 
 * Install
 
