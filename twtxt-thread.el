@@ -126,7 +126,7 @@
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-thread)))
   (twtxt--twt-component-keybindings)
-  (twtxt--org-mode-visual-fill)
+  (twtxt-mode 1)
   (widget-setup)
   (widget-forward 1))
 

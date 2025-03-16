@@ -39,9 +39,13 @@
 ;; which files you track.  The format is simple, human readable, and
 ;; integrates well with UNIX command line utilities.
 
+;;; Code:
+
 (require 'twtxt-variables)
 (require 'request)
 
+(defconst twtxt--post-name-buffer "*New post | twtxt*")
+(defconst twtxt--post-help-lines 6)
 (defvar twtxt-post-tweet-hook nil)
 (defvar twtxt--mentions nil)
 
@@ -80,56 +84,56 @@
 (defun twtxt--post-buffer (&optional hash)
   "Open a temporary buffer for writing and posting a new status update."
   (setq twtxt--mentions nil)
-  (twtxt--org-mode-visual-fill)
-  (let ((buffer-name "*New post | twtxt*"))
+  (let ((buffer-name twtxt--post-name-buffer))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
-    (insert "Write your post below:\n\n")
-    (insert (propertize "C-c C-c" 'face 'bold))
-    (insert " to post\n")
-    (insert (propertize "C-c C-m" 'face 'bold))
-    (insert " to mention\n")
-    (insert (propertize "C-c C-k" 'face 'bold))
-    (insert " to cancel.\n\n")
-
+    (twtxt--insert-logo)
+    (twtxt--insert-formatted-text (propertize "C-c C-c" 'face 'bold))
+    (twtxt--insert-formatted-text " to post\n")
+    (twtxt--insert-formatted-text (propertize "C-c C-m" 'face 'bold))
+    (twtxt--insert-formatted-text " to mention\n")
+    (twtxt--insert-formatted-text (propertize "C-c C-k" 'face 'bold))
+    (twtxt--insert-formatted-text " to cancel.")
+    (twtxt--insert-separator)
     (use-local-map (let ((map (make-sparse-keymap)))
                      (set-keymap-parent map text-mode-map)
                      (define-key map (kbd "C-c C-c") 'twtxt--post-confirm)
 		     (define-key map (kbd "C-c C-m") 'twtxt--insert-mention)
 		     (define-key map (kbd "C-c C-k") 'twtxt--post-cancel)
                      map))
-    (goto-char (point-max))
     (when hash
-      (insert (format "(#%s) " hash)))))
+      (twtxt--insert-formatted-text (format "(#%s) " hash)))
+    (twtxt-mode 1)
+    ;; Set the 6 first lines as read-only
+    (goto-char (point-max))))
 
 (defun twtxt--post-confirm ()
   "Post the content of the buffer as a new status update."
   (interactive)
-  (let* ((help-lines 5) ;; Number of help lines at the beginning of the buffer.
-         (post-start (save-excursion
-                       (goto-char (point-min))
-                       (forward-line help-lines) ;; Jump over help lines.
-                       (point)))
-         (post (buffer-substring-no-properties post-start (point-max))))
-    (when (and post (not (string-blank-p post)))
-      ;; Add post to twtxt file
-      (append-to-file
-       (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
-       nil
-       twtxt-file)
-      ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
-      (dolist (mention-url twtxt--mentions)
-	(request
-	  mention-url
-	  :type "GET"
-	  :headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
-		     ("Content-Type" . "text/plain; charset=utf-8"))
-	  :error (lambda (&rest _) (message "Failed to mention %s" mention-url))))
-      ;; Run hook
-      (run-hooks 'twtxt-post-tweet-hook)
-      ;; Feedback
-      (message "Posted: %s" post))
-    (kill-buffer)))
+  (post-start (save-excursion
+                (goto-char (point-min))
+                (forward-line twtxt--post-help-lines) ;; Jump over help lines.
+                (point)))
+  (post (buffer-substring-no-properties post-start (point-max)))
+  (when (and post (not (string-blank-p post)))
+    ;; Add post to twtxt file
+    (append-to-file
+     (concat (twtxt--get-datetime) "\t" (twtxt--replace-newlines post) "\n")
+     nil
+     twtxt-file)
+    ;; Multi-User User-Agent Extension: https://twtxt.dev/exts/multiuser-user-agent.html
+    (dolist (mention-url twtxt--mentions)
+      (request
+	mention-url
+	:type "GET"
+	:headers `(("User-Agent" . ,(format "twtxt-el/%s (+%s; @%s)" twtxt--version (cdr (assoc 'url twtxt--my-profile)) (cdr (assoc 'nick twtxt--my-profile))))
+		   ("Content-Type" . "text/plain; charset=utf-8"))
+	:error (lambda (&rest _) (message "Failed to mention %s" mention-url))))
+    ;; Run hook
+    (run-hooks 'twtxt-post-tweet-hook)
+    ;; Feedback
+    (message "Posted: %s" post))
+  (kill-buffer))
 
 (defun twtxt--post-cancel ()
   "Cancel and close the new post buffer without posting."

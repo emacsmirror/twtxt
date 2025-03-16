@@ -114,9 +114,8 @@
       (twtxt--insert-formatted-text public-key)))
 
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
-  (twtxt--org-mode-visual-fill)
   (goto-char (point-min))
-  (twtxt--org-mode-visual-fill)
+  (twtxt-mode 1)
   (read-only-mode))
 
 (provide 'twtxt-profile)

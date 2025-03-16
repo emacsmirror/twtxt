@@ -157,7 +157,7 @@
   (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
   (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout twtxt--timeline-current-list)))
   (twtxt--twt-component-keybindings)
-  (twtxt--org-mode-visual-fill)
+  (twtxt-mode 1)
   (widget-setup)
   (widget-forward 1))
 

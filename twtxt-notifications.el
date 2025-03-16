@@ -128,7 +128,7 @@
   (display-line-numbers-mode 0)
   ;; Keybindings
   (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-notifications)))
-  (twtxt--org-mode-visual-fill)
+  (twtxt-mode 1)
   (widget-setup)
   (widget-forward 1))
 
