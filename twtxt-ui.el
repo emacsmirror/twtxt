@@ -126,11 +126,11 @@
     ;; direct message
     (when (eq look-and-feel 'direct-message)
       (twtxt--insert-formatted-text prefix)
-      (twtxt--insert-formatted-text "🔒 Direct message from " nil "yellow")
+      (twtxt--insert-formatted-text "\n🔒 Direct message from " nil "yellow")
       (twtxt--insert-formatted-text "\n"))
     (when (eq look-and-feel 'mention)
       (twtxt--insert-formatted-text prefix)
-      (twtxt--insert-formatted-text "📢 Mention" nil "yellow")
+      (twtxt--insert-formatted-text "\n📢 Mention" nil "yellow")
       (twtxt--insert-formatted-text "\n"))
     ;; text
     (twtxt--insert-formatted-text "\n")
