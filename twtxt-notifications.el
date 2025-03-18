@@ -67,12 +67,16 @@
   (kill-buffer twtxt--notifications-name-buffer)
   (switch-to-buffer twtxt--timeline-name-buffer))
 
+(defun twtxt--notifications-insert-loading-p ()
+  "Check if we are loading more notifications."
+  (< (* twtxt--notifications-page twtxt--notifications-per-page) (length twtxt--notifications-twts)))
+
 (defun twtxt--notifications-next-page ()
   "Go to the next page of notifications."
   (when (and (string= (buffer-name) twtxt--notifications-name-buffer)
-             (< (* twtxt--notifications-page twtxt--notifications-per-page) (length twtxt--notifications-twts)))
+             (twtxt--notifications-insert-loading-p))
     (setq twtxt--notifications-page (1+ twtxt--notifications-page))
-    (let ((inhibit-read-only t))  ;; Allow editing
+    (let ((inhibit-read-only t))
       (widget-delete twtxt--notifications-widget-loading-more)
       (twtxt--insert-notifications)
       (twtxt--notifications-insert-loading))))
@@ -94,20 +98,22 @@
 
 (defun twtxt--insert-notifications ()
   "Draw the notifications list."
-  (dolist (twt (cl-subseq
-                twtxt--notifications-twts
-                (* (- twtxt--notifications-page 1) twtxt--notifications-per-page)
-                (* twtxt--notifications-page twtxt--notifications-per-page)))
-    (let* ((author-id (cdr (assoc 'author-id twt)))
-	   (profile (twtxt--profile-by-id author-id))
-	   (nick (cdr (assoc 'nick profile)))
-	   (avatar-url (cdr (assoc 'avatar profile)))
-	   (hash (cdr (assoc 'hash twt)))
-	   (thread (cdr (assoc 'thread twt)))
-	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
-	   (text (cdr (assoc 'text twt)))
-	   (type (alist-get 'type twt)))
-      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--notifications-current-list type))))
+  (let* ((start (* (- twtxt--notifications-page 1) twtxt--notifications-per-page))
+	 (end (+ start twtxt--notifications-per-page)))
+    (dolist (twt (cl-subseq
+                  twtxt--notifications-twts
+                  (min start (length twtxt--notifications-twts))
+                  (min end (length twtxt--notifications-twts))))
+      (let* ((author-id (cdr (assoc 'author-id twt)))
+	     (profile (twtxt--profile-by-id author-id))
+	     (nick (cdr (assoc 'nick profile)))
+	     (avatar-url (cdr (assoc 'avatar profile)))
+	     (hash (cdr (assoc 'hash twt)))
+	     (thread (cdr (assoc 'thread twt)))
+	     (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
+	     (text (cdr (assoc 'text twt)))
+	     (type (alist-get 'type twt)))
+	(twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--notifications-current-list type)))))
 
 
 (defun twtxt--notifications-layout (current-list)
@@ -123,7 +129,7 @@
   (when twtxt--pandoc-p (org-mode))
   (twtxt--insert-notifications-header)
   (twtxt--insert-notifications)
-  (twtxt--notifications-insert-loading)
+  (when (twtxt--notifications-insert-loading-p)(twtxt--notifications-insert-loading))
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
