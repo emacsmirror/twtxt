@@ -89,17 +89,5 @@ Returns the converted text as a string."
 	(shell-command-on-region (point-min) (point-max) "pandoc -f markdown -t org" t t)
 	(buffer-string)) md-text))
 
-(defun convert-region-to-org-mode (start end)
-  "Enable Org-mode from the cursor to the end of the buffer."
-  (interactive "r")
-  (let* ((text (buffer-substring-no-properties start end))
-         (org-text (twtxt--markdown-to-org-string text)))
-    (goto-char start)
-    (delete-region start end)
-    (insert org-text)
-    (org-mode)
-    (goto-char (point-max))
-    (org-mode)))
-
 (provide 'twtxt-string)
 ;;; twtxt-string.el ends here
