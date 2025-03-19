@@ -62,6 +62,11 @@
 
 
 ;; Functions
+(defun twtxt--timeline-quit ()
+  "Quit the timeline buffer."
+  (when (string= (buffer-name) twtxt--timeline-name-buffer)
+    (kill-buffer twtxt--timeline-name-buffer)))
+
 (defun twtxt--timeline-next-page ()
   "Go to the next page of twtxts."
   (when (and (string= (buffer-name) twtxt--timeline-name-buffer)
@@ -159,7 +164,7 @@
   (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
   (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
-  (local-set-key (kbd "q") (lambda () (interactive) (kill-buffer twtxt--timeline-name-buffer)))
+  (local-set-key (kbd "q") (lambda () (interactive) (twtxt--timeline-quit)))
   (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout twtxt--timeline-current-list)))
   (twtxt--twt-component-keybindings)
   (twtxt-mode 1)
