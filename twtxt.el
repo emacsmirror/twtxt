@@ -81,7 +81,7 @@
   (interactive)
   (twtxt--fetch-all-feeds-async)
   (add-hook 'twtxt-after-fetch-posts-hook (lambda ()
-					    (setq twtxt--twtxts-page 1)
+					    (setq twtxt--timeline-page 1)
 					    (setq twtxt--timeline-thread nil)
 					    (twtxt--timeline-layout)) nil t))
 
