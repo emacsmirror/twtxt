@@ -175,9 +175,9 @@ If you want to enable this feature you need:
      # description = I'm a hacker
      # public_key = MCowBQYDK2VuAyEAvBvdsHgzmIiRL9Mjb4fVrbSQGn4Q/m9p7XZCUDj5liI=
    #+END_SRC
- 5. Set the ~twtxt-dm-private-key-path~ with the path to the private key.
+ 5. Set the ~twtxt-dm-private-key-file~ with the path to the private key in your ~init.el~.
    #+BEGIN_SRC emacs-lisp
-     (setq twtxt-dm-private-key-path "~/path/to/private_key.pem")
+     (setq twtxt-dm-private-key-file "~/path/to/private_key.pem")
    #+END_SRC
  6. Run ~M-x twtxt-direct-message~.
 

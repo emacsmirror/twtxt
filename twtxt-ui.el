@@ -139,7 +139,7 @@
    (when (twtxt--image-p text)
      (progn
        (twtxt--insert-formatted-text "\n\n")
-       (dolist (url (get-images-urls text))
+       (dolist (url (twtxt--image-get-images-urls text))
 	 (progn
 	   (twtxt--put-image-from-cache url (line-number-at-pos) 200)
 	   (twtxt--insert-formatted-text "  ")))
