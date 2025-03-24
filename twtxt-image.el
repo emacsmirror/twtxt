@@ -41,7 +41,7 @@
 
 (require 'twtxt-variables)
 
-(defconst twtxt--regex-image "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\|avif\\|webp\\)")
+(defconst twtxt--regex-image "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\)")
 
 (defconst twtxt--anonymous-avatar "👤")
 
