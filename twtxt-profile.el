@@ -42,8 +42,17 @@
 (require 'twtxt-string)
 (require 'twtxt-feed)
 (require 'twtxt-image)
+(require 'widget)
+(require 'wid-edit)
 
-(defconst twtxt--profile-buffer "*Profile | twtxt*")
+(defconst twtxt--profile-name-buffer "*Profile | twtxt*")
+
+(defun twtxt--quit-profile ()
+  "Quit the profile buffer."
+  (interactive)
+  (kill-buffer twtxt--profile-name-buffer)
+  (when (get-buffer twtxt--timeline-name-buffer)
+    (switch-to-buffer twtxt--timeline-name-buffer)))
 
 (defun twtxt--insert-section (title)
   "Insert a section TITLE formatted with separators."
@@ -52,9 +61,18 @@
 (defun twtxt---profile-layout (author-id)
   "Open the twtxt profile buffer."
   (interactive)
-  (switch-to-buffer twtxt--profile-buffer)
+  (switch-to-buffer twtxt--profile-name-buffer)
+  (kill-all-local-variables)
+  (let ((inhibit-read-only t))
+    (erase-buffer))
+  (remove-overlays)
   (twtxt--insert-logo)
-  (twtxt--insert-formatted-text "Actions: (b) Back\n")
+  (twtxt--insert-formatted-text "Actions: (b) Back\n\n")
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
+			   (twtxt--quit-profile))
+		 :help-echo "Return to the timeline"
+		 " ← Back ")
   (let* ((profile (twtxt--profile-by-id author-id))
 	 (avatar (cdr (assoc 'avatar profile)))
 	 (nick (cdr (assoc 'nick profile)))
@@ -65,7 +83,7 @@
 	 (public-key (cdr (assoc 'public-key profile))))
     ;; Avatar
     (when avatar
-      (twtxt--insert-formatted-text "\n ")
+      (twtxt--insert-formatted-text "\n\n ")
       (twtxt--put-image-from-cache avatar (line-number-at-pos) 200))
     ;; Nick
     (when nick
@@ -114,11 +132,14 @@
     (when public-key
       (twtxt--insert-formatted-text " 🔑 Public key: " nil "yellow")
       (twtxt--insert-formatted-text public-key)))
-
-  (local-set-key (kbd "b") (lambda () (interactive) (kill-buffer twtxt--profile-buffer)))
+  (use-local-map widget-keymap)
+  (display-line-numbers-mode 0)
+  (local-set-key (kbd "b") 'twtxt--quit-profile)
   (goto-char (point-min))
+  (read-only-mode)
   (twtxt-mode 1)
-  (read-only-mode))
+  (widget-setup)
+  (widget-forward 1))
 
 (provide 'twtxt-profile)
 ;;; twtxt-profile.el ends here
