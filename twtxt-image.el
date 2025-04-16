@@ -72,14 +72,15 @@
   "Check if TXT contains an image."
   (string-match-p twtxt--regex-image text))
 
-(defun get-images-urls (text)
+(defun twtxt--image-get-images-urls (text)
   "Get all image URLs from TEXT."
   (let ((urls '())
         (pos 0))
     (while (string-match twtxt--regex-image text pos)
-      (push (match-string 0 text) urls)
+      (push (url-unhex-string (match-string 0 text)) urls)
       (setq pos (match-end 0)))
     urls))
+
 
 (defun twtxt--put-image-from-cache (url pos &optional width)
   "Put an image from cache at URL at POS."

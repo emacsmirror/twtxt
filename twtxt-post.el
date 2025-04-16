@@ -130,8 +130,10 @@
 		     ("Content-Type" . "text/plain; charset=utf-8"))))
       ;; Run hook
       (run-hooks 'twtxt-post-tweet-hook)
+      ;; Update timeline
+      (twtxt--update-my-profile-on-feeds)
       ;; Feedback
-      (message "Posted: %s" post))
+      (message "New post published!"))
     (kill-buffer)))
 
 

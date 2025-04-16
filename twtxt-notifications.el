@@ -93,7 +93,12 @@
   (twtxt--insert-formatted-text "\n")
   ;; Logo
   (twtxt--insert-logo)
-  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back")
+  (twtxt--insert-formatted-text "(n) Next | (p) Previous | (r) Reply | (t) Thread | (b) Back\n\n")
+  (widget-create 'push-button
+		 :notify (lambda (&rest ignore)
+			   (twtxt--quit-notifications))
+		 :help-echo "Return to the timeline"
+		 " ← Back ")
   (twtxt--insert-separator))
 
 (defun twtxt--insert-notifications ()
