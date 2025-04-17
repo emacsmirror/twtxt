@@ -54,7 +54,6 @@
 (defconst twtxt--text-button-thread " ⎆ Thread ")
 (defconst twtxt--text-button-dm " 🔒 DM ")
 (defconst twtxt--char-separator ?-)
-(defconst twtxt--width-separator 74)
 
 ;; Functions
 
@@ -67,7 +66,7 @@
 
 (defun twtxt--string-separator ()
   "Return a string with the separator character."
-  (make-string twtxt--width-separator twtxt--char-separator))
+  (make-string twtxt--max-width twtxt--char-separator))
 
 (defun twtxt--insert-separator ()
   "Insert a horizontal line in the buffer with full width of the window."
@@ -182,14 +181,14 @@
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--profile-layout author-id))
 		  " 🖼 Profile ")
-   (twtxt--insert-formatted-text "\n")
    ;; Button DM
    (when (twtxt--dm-comunicate-p author-id)
      (twtxt--insert-formatted-text prefix)
      (widget-create 'push-button
 		    :notify (lambda (&rest ignore) (twtxt--post-buffer author-id nil t))
 		    twtxt--text-button-dm)
-     (twtxt--insert-formatted-text "\n"))
+     )
+   (twtxt--insert-formatted-text "\n")
    ;; End of twt
    (twtxt--insert-separator)))
 
