@@ -158,21 +158,31 @@
    (twtxt--insert-formatted-text date nil "#FF5733")
    (twtxt--insert-formatted-text prefix)
    (twtxt--insert-formatted-text "\n\n")
+   ;;Button thread
    (unless (equal hash thread)
      (when (or (twtxt--replies-p hash twts-list) thread)
        (widget-create 'push-button
 		      :notify (lambda (&rest ignore)
 				(twtxt--thread-layout thread twts-list))
 		      twtxt--text-button-thread)))
+   ;; Button Reply
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
 		  twtxt--text-button-reply-twt)
+   ;; Button Profile
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
-		  :notify (lambda (&rest ignore) (twtxt---profile-layout author-id))
+		  :notify (lambda (&rest ignore) (twtxt--profile-layout author-id))
 		  " Profile ")
    (twtxt--insert-formatted-text "\n")
+   ;; Button DM
+   (when (twtxt--dm-comunicate-p author-id)
+     (twtxt--insert-formatted-text prefix)
+     (widget-create 'push-button
+		    :notify (lambda (&rest ignore) (twtxt--post-buffer author-id nil t))
+		    " Send Direct Message ")
+     (twtxt--insert-formatted-text "\n"))
    ;; End of twt
    (twtxt--insert-separator)))
 

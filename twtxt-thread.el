@@ -123,7 +123,7 @@
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt--profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-thread)))
   (twtxt--twt-component-keybindings)
   (twtxt-mode 1)

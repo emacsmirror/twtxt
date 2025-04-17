@@ -103,17 +103,12 @@
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (message "Not implement this yet."))
-		 " 🖂 Direct messages ")
-  (twtxt--insert-formatted-text " ")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
 			   (twtxt--timeline-refresh))
 		 " ↺ Refresh ")
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
+			   (twtxt--profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 My profile ")
   (twtxt--insert-formatted-text "\n\n")
   (twtxt--insert-formatted-text "Navigation: (n) Next | (p) Previous | (t) Thread\n")
@@ -163,7 +158,7 @@
   ;; Keybindings
   (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt--profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "q") (lambda () (interactive) (twtxt--timeline-quit)))
   (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout twtxt--timeline-current-list)))
   (twtxt--twt-component-keybindings)

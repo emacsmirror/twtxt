@@ -52,6 +52,7 @@
 (require 'twtxt-variables)
 (require 'twtxt-post)
 (require 'twtxt-feed)
+(require 'twtxt-dm)
 (require 'twtxt-timeline)
 (require 'cl-lib)
 

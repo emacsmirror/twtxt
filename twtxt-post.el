@@ -81,7 +81,7 @@
        (insert "@<" selected-user "> "))))))
 
 
-(defun twtxt--post-buffer (&optional hash)
+(defun twtxt--post-buffer (&optional hash dm)
   "Open a temporary buffer for writing and posting a new status update."
   (setq twtxt--mentions nil)
   (let ((buffer-name twtxt--post-name-buffer))

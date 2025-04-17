@@ -46,6 +46,11 @@
   "Return t if the twt is a DM."
   )
 
+(defun twtxt--dm-for-me (twt)
+  "Return t if the twt is a DM and it is for the user."
+  (when (twtxt--dm-twt-p twt) t)
+  )
+
 (defun twtxt--dm-send-p ()
   "Return t if the user can send DMs."
   )
