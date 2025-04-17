@@ -91,4 +91,4 @@
 
 
 (provide 'twtxt-image)
-;;; twtxt-variables.el ends here
+;;; twtxt-image.el ends here
