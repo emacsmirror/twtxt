@@ -52,6 +52,7 @@
 (defvar twtxt--last-twt-hook nil)
 (defconst twtxt--text-button-reply-twt " ↳ Reply ")
 (defconst twtxt--text-button-thread " ⎆ Thread ")
+(defconst twtxt--text-button-dm " 🔒 DM ")
 (defconst twtxt--char-separator ?-)
 (defconst twtxt--width-separator 74)
 
@@ -84,6 +85,12 @@
   "Go to the thread of a twtxt. THREAD-ID is the hash of the thread, TWTS-LIST is the list of twts."
   (search-backward-regexp twtxt--char-separator)
   (search-forward-regexp twtxt--text-button-thread)
+  (widget-button-press (point)))
+
+(defun twtxt--goto-dm ()
+  "Go to the direct message of a twtxt."
+  (search-backward-regexp twtxt--char-separator)
+  (search-forward-regexp twtxt--text-button-dm)
   (widget-button-press (point)))
 
 (defun twtxt--regexp-separator ()
@@ -174,14 +181,14 @@
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--profile-layout author-id))
-		  " Profile ")
+		  " 🖼 Profile ")
    (twtxt--insert-formatted-text "\n")
    ;; Button DM
    (when (twtxt--dm-comunicate-p author-id)
      (twtxt--insert-formatted-text prefix)
      (widget-create 'push-button
 		    :notify (lambda (&rest ignore) (twtxt--post-buffer author-id nil t))
-		    " Send Direct Message ")
+		    twtxt--text-button-dm)
      (twtxt--insert-formatted-text "\n"))
    ;; End of twt
    (twtxt--insert-separator)))
@@ -191,7 +198,8 @@
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
   (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
-  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt))))
+  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt)))
+  (local-set-key (kbd "d") (lambda () (interactive) (twtxt--goto-dm))))
 
 
 (provide 'twtxt-ui)

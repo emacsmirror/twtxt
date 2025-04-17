@@ -41,6 +41,8 @@
 
 ;; Specification: https://twtxt.dev/exts/direct-message.html
 (defvar twtxt-dm-private-key-file nil)
+(defconst twtxt--dm-pattern "!<\\(\\w+\\) \\(\\w+\\)> \\(.*\\)"
+  "Pattern to match a DM twt.")
 
 (defun twtxt--dm-twt-p (twt)
   "Return t if the twt is a DM."
