@@ -45,7 +45,7 @@
 (require 'request)
 
 (defconst twtxt--post-name-buffer "*New post | twtxt*")
-(defconst twtxt--post-help-lines 9)
+(defconst twtxt--post-help-lines 8)
 (defvar twtxt-post-tweet-hook nil)
 (defvar twtxt--mentions nil)
 (defvar twtxt--post-hash nil)
@@ -95,9 +95,9 @@
     (twtxt--insert-formatted-text "Type: ")
     (twtxt--insert-formatted-text
      (cond
-      (hash (format "reply to #%s" hash))
+      (hash (format "Reply to #%s" hash))
       (dm (format "Direct Messate to %s" dm))
-      (t "new post")))
+      (t "New post")))
     (twtxt--insert-formatted-text "\n\n")
     (twtxt--insert-formatted-text (propertize "C-c C-c" 'face 'bold))
     (twtxt--insert-formatted-text " to post\n")
@@ -121,13 +121,13 @@
   "Post the content of the buffer as a new status update."
   (interactive)
   ;; Insert the hash if it exists
-  (when (twtxt--post-hash)
+  (when twtxt--post-hash
     (goto-char (point-min))
     (forward-line twtxt--post-help-lines)
     (insert (format "(#%s) " twtxt--post-hash))
     (setq twtxt--post-hash nil))
   ;; Insert the DM if it exists
-  (when (twtxt--post-dm)
+  (when twtxt--post-dm
     (goto-char (point-min))
     (forward-line twtxt--post-help-lines)
     (insert (format ("!<%s> " twtxt--post-dm)))
