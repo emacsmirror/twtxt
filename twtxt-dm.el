@@ -40,18 +40,27 @@
 ;; integrates well with UNIX command line utilities.
 
 ;; Specification: https://twtxt.dev/exts/direct-message.html
+(require 'twtxt-feed)
+
 (defvar twtxt-dm-private-key-file nil)
 (defconst twtxt--dm-pattern "!<\\(\\w+\\) \\(\\w+\\)> \\(.*\\)"
   "Pattern to match a DM twt.")
 
-(defun twtxt--dm-twt-p (twt)
-  "Return t if the twt is a DM."
-  )
+(defun twtxt--dm-twt-p (text)
+  "Return t if the text is a DM."
+  (string-match twtxt--dm-pattern text))
 
-(defun twtxt--dm-for-me (twt)
-  "Return t if the twt is a DM and it is for the user."
-  (when (twtxt--dm-twt-p twt) t)
-  )
+(defun twtxt--dm-get-url (text)
+  "Return the URL from the DM text."
+  (when (twtxt--dm-twt-p text)
+    (match-string 2 text)))
+
+(defun twtxt--dm-for-me (text)
+  "Return t if the text is a DM and it is for the user."
+  (and (twtxt--dm-twt-p text)
+       (or
+	(string-prefix-p (twtxt--dm-get-url text) (cdr (assoc 'url twtxt--my-profile)))
+	(string-prefix-p (cdr (assoc 'url twtxt--my-profile)) (twtxt--dm-get-url text)))))
 
 (defun twtxt--dm-send-p ()
   "Return t if the user can send DMs."

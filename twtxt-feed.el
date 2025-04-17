@@ -267,8 +267,15 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
                                           (cons 'text (cdr (assoc 'text twt)))))
                                        twts)))
                            twtxt--feeds))
+	 ;; Ignore direct messages that are not for the user
+	 (timeline-without-externals-dm
+	  (seq-filter (lambda (twt)
+			(or (not (twtxt--dm-twt-p (cdr (assoc 'text twt))))
+			    (and (twtxt--dm-twt-p (cdr (assoc 'text twt))) (twtxt--dm-for-me (cdr (assoc 'text twt))))))
+		      timeline))
+	 ;; Sort the timeline by date
 	 (timeline-sorted
-	  (sort timeline
+	  (sort timeline-without-externals-dm
 		(lambda (a b)
 		  (< (cdr (assoc 'date b))
 		     (cdr (assoc 'date a)))))))

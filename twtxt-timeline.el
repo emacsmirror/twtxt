@@ -138,7 +138,7 @@
 	   (thread (cdr (assoc 'thread twt)))
 	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
 	   (text (cdr (assoc 'text twt))))
-      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--timeline-current-list))))
+      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--timeline-current-list (when (twtxt--dm-twt-p text) 'direct-message)))))
 
 
 (defun twtxt--timeline-layout ()
