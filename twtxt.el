@@ -4,7 +4,7 @@
 
 ;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
 ;; Colaborator: Andros - https://andros.dev
-;; Version: 0.2
+;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column 2.4"))
 
