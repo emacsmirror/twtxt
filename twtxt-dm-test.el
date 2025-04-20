@@ -1,4 +1,4 @@
-;;; twtxt-dm.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
+;;; twtxt-dm-test.el -*- lexical-binding: t -*-
 
 ;; SPDX-License-Identifier: GPL-3.0
 
@@ -39,53 +39,33 @@
 ;; which files you track.  The format is simple, human readable, and
 ;; integrates well with UNIX command line utilities.
 
-;; Specification: https://twtxt.dev/exts/direct-message.html
-(require 'twtxt-feed)
 
-(defvar twtxt-dm-private-key-file nil)
-(defconst twtxt--dm-pattern "!<\\(\\w+\\) \\(\\w+\\)> \\(.*\\)"
-  "Pattern to match a DM twt.")
+(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
+(require 'twtxt-dm)
+(require 'ert)
 
-(defun twtxt--dm-twt-p (text)
-  "Return t if the text is a DM."
-  (string-match twtxt--dm-pattern text))
-
-(defun twtxt--dm-get-url (text)
-  "Return the URL from the DM text."
-  (when (twtxt--dm-twt-p text)
-    (match-string 2 text)))
-
-(defun twtxt--dm-is-for-me-p (text)
-  "Return t if the text is a DM and it is for the user."
-  (and (twtxt--dm-twt-p text)
-       (or
-	(string-prefix-p (twtxt--dm-get-url text) (cdr (assoc 'url twtxt--my-profile)))
-	(string-prefix-p (cdr (assoc 'url twtxt--my-profile)) (twtxt--dm-get-url text)))))
-
-(defun twtxt--dm-send-p ()
-  "Return t if the user can send DMs."
+(ert-deftest test-twtxt--dm-twt-p ()
   )
 
-(defun twtxt--dm-receive-p (user-id)
-  "Return t if the USER-ID can receive DMs."
+(ert-deftest test-twtxt--dm-get-url ()
   )
 
-(defun twtxt--dm-comunicate-p (receive-id)
-  "Returns t if the user RECEIVE-ID can send and receive DMs."
-  (and (twtxt--dm-send-p)
-       (twtxt--dm-receive-p receive-id)))
-
-(defun twtxt--dm-make-shared-key (receive-id)
-  "Make a shared key for the user RECEIVE-ID using the private key."
+(ert-deftest test-twtxt--dm-is-for-me-p ()
   )
 
-(defun twtxt--dm-make (twt receive-id)
-  "Generate a DM from the twt and the user RECEIVE-ID with the shared key using the patter '!<nick url> encrypted_message'."
+(ert-deftest test-twtxt--dm-send-p ()
   )
 
-(defun twtxt--dm-read (twt)
-  "Return the decrypted DM from the twt and the user RECEIVE-ID using the shared key."
+(ert-deftest test-twtxt--dm-receive-p ()
   )
 
-(provide 'twtxt-dm)
-;;; twtxt-dm.el ends here
+(ert-deftest test-twtxt--dm-comunicate-p ()
+  )
+
+(ert-deftest test-twtxt--dm-make-shared-key ()
+  )
+
+(ert-deftest test-twtxt--dm-read ()
+  )
+
+(provide 'twtxt-dm-test)
