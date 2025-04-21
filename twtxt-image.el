@@ -40,8 +40,8 @@
 ;; integrates well with UNIX command line utilities.
 
 (require 'twtxt-variables)
-
-(defconst twtxt--regex-image "http[^ ]*\\(png\\|jpg\\|jpeg\\|gif\\)")
+;;
+(defconst twtxt--regex-image "\\bhttps?:\\/\\/[^][()[:space:]]+\\.\\(?:png\\|jpe?g\\|gif\\)\\b")
 
 (defconst twtxt--anonymous-avatar "👤")
 
@@ -79,6 +79,23 @@
     (while (string-match twtxt--regex-image text pos)
       (push (url-unhex-string (match-string 0 text)) urls)
       (setq pos (match-end 0)))
+    urls))
+
+(defun twtxt--image-get-images-urls (text)
+  "Get all image URLs from TEXT, including encoded and double extensions."
+  (let ((urls '())
+        (pos 0)
+        match-start match-end)
+    (while (and (< pos (length text))
+                (string-match
+                 twtxt--regex-image
+                 text pos))
+      (setq match-start (match-beginning 0))
+      (setq match-end (match-end 0))
+      (if (= match-start match-end)
+          (setq pos (1+ match-end))
+        (push (match-string 0 text) urls)
+        (setq pos match-end)))
     urls))
 
 

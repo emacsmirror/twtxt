@@ -55,7 +55,7 @@
   (when (twtxt--dm-twt-p text)
     (match-string 2 text)))
 
-(defun twtxt--dm-is-for-me-p (text)
+(defun twtxt--dm-for-me-p (text)
   "Return t if the text is a DM and it is for the user."
   (and (twtxt--dm-twt-p text)
        (or

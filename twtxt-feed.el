@@ -271,7 +271,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	 (timeline-without-externals-dm
 	  (seq-filter (lambda (twt)
 			(or (not (twtxt--dm-twt-p (cdr (assoc 'text twt))))
-			    (and (twtxt--dm-twt-p (cdr (assoc 'text twt))) (twtxt--dm-for-me (cdr (assoc 'text twt))))))
+			    (and (twtxt--dm-twt-p (cdr (assoc 'text twt))) (twtxt--dm-for-me-p (cdr (assoc 'text twt))))))
 		      timeline))
 	 ;; Sort the timeline by date
 	 (timeline-sorted
