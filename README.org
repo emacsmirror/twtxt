@@ -38,6 +38,21 @@ You will not need to use the official terminal client or other complex solutions
 #+CAPTION: New post
 [[./screenshots/screenshot-4.jpg]]
 
+** Supported extensions:
+
+| Feature        | Status |
+|----------------+--------|
+| Twt Hash       | ✅     |
+| Twt Subject    | ✅     |
+| Multiline      | ✅     |
+| User-Agent     | ✅     |
+| Metadata       | ✅     |
+| Archive Feeds  | ❌     |
+| WebFinger      | ❌     |
+| Direct Message | ✅     |
+
+The extensions that it does not support are due to its desktop client nature.
+
 * Install
 
 ** Melpa
