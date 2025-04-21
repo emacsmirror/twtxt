@@ -135,7 +135,9 @@ Returns the resulting 8-character hash as a string. This Emacs Lisp
 implementation replicates the shell command:
   printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8."
   (when (twtxt--check-required-commands)
-    (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
+    (let* ((patter-timestamp-to-parse "\\([+-]\\)00:00")
+	   (parse-timestamp (if (string-match-p patter-timestamp-to-parse timestamp) (replace-regexp-in-string "\\([+-]\\)00:00" "Z" timestamp) timestamp))
+	   (input (format "%s\n%s\n%s" feed-url parse-timestamp message))
 	   (hash ""))
       ;; Use a temporary buffer to pass input to the shell pipeline.
       (with-temp-buffer
