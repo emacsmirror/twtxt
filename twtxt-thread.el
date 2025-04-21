@@ -59,8 +59,7 @@
 (defun twtxt--quit-thread ()
   "Quit the thread buffer."
   (interactive)
-  (kill-buffer twtxt--thread-name-buffer)
-  (switch-to-buffer twtxt--timeline-name-buffer))
+  (kill-buffer twtxt--thread-name-buffer))
 
 (defun twtxt--list-thread (thread-id current-list)
   "List all twts in CURRENT-LIST with THREAD-ID."
