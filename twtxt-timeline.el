@@ -4,7 +4,7 @@
 ;; SPDX-License-Identifier: GPL-3.0
 
 ;; Author: Andros - https://andros.dev
-;; Version: 0.2
+;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
@@ -103,21 +103,17 @@
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (message "Not implement this yet."))
-		 " 🖂 Direct messages ")
-  (twtxt--insert-formatted-text " ")
-  (widget-create 'push-button
-		 :notify (lambda (&rest ignore)
 			   (twtxt--timeline-refresh))
 		 " ↺ Refresh ")
   (twtxt--insert-formatted-text " ")
   (widget-create 'push-button
 		 :notify (lambda (&rest ignore)
-			   (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile))))
+			   (twtxt--profile-layout (cdr (assoc 'id twtxt--my-profile))))
 		 " 🖼 My profile ")
   (twtxt--insert-formatted-text "\n\n")
   (twtxt--insert-formatted-text "Navigation: (n) Next | (p) Previous | (t) Thread\n")
-  (twtxt--insert-formatted-text "Actions: (c) Create | (r) Reply | (N) Notifications | (P) Profile | (q) Quit\n")
+  (twtxt--insert-formatted-text "Write: (c) Create | (r) Reply | (d) DM\n")
+  (twtxt--insert-formatted-text "Actions: (N) Notifications | (P) My profile | (q) Quit\n")
   (twtxt--insert-separator))
 
 (defun twtxt--timeline-insert-loading ()
@@ -142,7 +138,7 @@
 	   (thread (cdr (assoc 'thread twt)))
 	   (date (format-time-string "%Y-%m-%d %H:%M" (float-time (cdr (assoc 'date twt)))))
 	   (text (cdr (assoc 'text twt))))
-      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--timeline-current-list))))
+      (twtxt--twt-component author-id text nick date avatar-url hash thread twtxt--timeline-current-list (when (twtxt--dm-twt-p text) 'direct-message)))))
 
 
 (defun twtxt--timeline-layout ()
@@ -163,7 +159,7 @@
   ;; Keybindings
   (local-set-key (kbd "c") (lambda () (interactive) (twtxt--post-buffer)))
   (local-set-key (kbd "g") (lambda () (interactive) (twtxt--timeline-refresh)))
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt--profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "q") (lambda () (interactive) (twtxt--timeline-quit)))
   (local-set-key (kbd "N") (lambda () (interactive) (twtxt--notifications-layout twtxt--timeline-current-list)))
   (twtxt--twt-component-keybindings)

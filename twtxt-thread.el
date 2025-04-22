@@ -4,7 +4,7 @@
 ;; SPDX-License-Identifier: GPL-3.0
 
 ;; Author: Andros - https://andros.dev
-;; Version: 0.2
+;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
@@ -59,8 +59,7 @@
 (defun twtxt--quit-thread ()
   "Quit the thread buffer."
   (interactive)
-  (kill-buffer twtxt--thread-name-buffer)
-  (switch-to-buffer twtxt--timeline-name-buffer))
+  (kill-buffer twtxt--thread-name-buffer))
 
 (defun twtxt--list-thread (thread-id current-list)
   "List all twts in CURRENT-LIST with THREAD-ID."
@@ -123,7 +122,7 @@
   (use-local-map widget-keymap)
   (display-line-numbers-mode 0)
   ;; Keybindings
-  (local-set-key (kbd "P") (lambda () (interactive) (twtxt---profile-layout (cdr (assoc 'id twtxt--my-profile)))))
+  (local-set-key (kbd "P") (lambda () (interactive) (twtxt--profile-layout (cdr (assoc 'id twtxt--my-profile)))))
   (local-set-key (kbd "b") (lambda () (interactive) (twtxt--quit-thread)))
   (twtxt--twt-component-keybindings)
   (twtxt-mode 1)

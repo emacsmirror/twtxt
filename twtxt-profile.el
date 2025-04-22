@@ -58,7 +58,7 @@
   "Insert a section TITLE formatted with separators."
   (twtxt--insert-formatted-text (concat "\n━━━━━━━━━━━━━━━━━━━\n  " title "\n━━━━━━━━━━━━━━━━━━━\n")))
 
-(defun twtxt---profile-layout (author-id)
+(defun twtxt--profile-layout (author-id)
   "Open the twtxt profile buffer."
   (interactive)
   (switch-to-buffer twtxt--profile-name-buffer)

@@ -3,7 +3,7 @@
 ;; SPDX-License-Identifier: GPL-3.0
 
 ;; Author: Andros <https://andros.dev>
-;; Version: 0.2
+;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
@@ -135,7 +135,9 @@ Returns the resulting 8-character hash as a string. This Emacs Lisp
 implementation replicates the shell command:
   printf '%s\\n%s\\n%s' URL TIMESTAMP MESSAGE | b2sum -l 256 | awk '{ print $1 }' | xxd -r -p | base32 | tr -d '=' | tr 'A-Z' 'a-z' | tail -c 8."
   (when (twtxt--check-required-commands)
-    (let* ((input (format "%s\n%s\n%s" feed-url timestamp message))
+    (let* ((patter-timestamp-to-parse "\\([+-]\\)00:00")
+	   (parse-timestamp (if (string-match-p patter-timestamp-to-parse timestamp) (replace-regexp-in-string "\\([+-]\\)00:00" "Z" timestamp) timestamp))
+	   (input (format "%s\n%s\n%s" feed-url parse-timestamp message))
 	   (hash ""))
       ;; Use a temporary buffer to pass input to the shell pipeline.
       (with-temp-buffer
@@ -267,8 +269,15 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
                                           (cons 'text (cdr (assoc 'text twt)))))
                                        twts)))
                            twtxt--feeds))
+	 ;; Ignore direct messages that are not for the user
+	 (timeline-without-externals-dm
+	  (seq-filter (lambda (twt)
+			(or (not (twtxt--dm-twt-p (cdr (assoc 'text twt))))
+			    (and (twtxt--dm-twt-p (cdr (assoc 'text twt))) (twtxt--dm-for-me-p (cdr (assoc 'text twt))))))
+		      timeline))
+	 ;; Sort the timeline by date
 	 (timeline-sorted
-	  (sort timeline
+	  (sort timeline-without-externals-dm
 		(lambda (a b)
 		  (< (cdr (assoc 'date b))
 		     (cdr (assoc 'date a)))))))

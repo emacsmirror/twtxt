@@ -1,12 +1,11 @@
-;;; twtxt.el --- A twtxt client for Emacs -*- lexical-binding: t -*- -*- coding: utf-8 -*-
+;;; twtxt-dm-test.el -*- lexical-binding: t -*-
 
 ;; SPDX-License-Identifier: GPL-3.0
 
-;; Author: DEADBLACKCLOVER <deadblackclover@protonmail.com>
-;; Colaborator: Andros - https://andros.dev
+;; Author: Andros <https://andros.dev>
 ;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
-;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column 2.4"))
+;; Package-Requires: ((emacs "25.1") (request "0.2.0"))
 
 ;; Copyright (c) 2020, DEADBLACKCLOVER.
 
@@ -40,56 +39,33 @@
 ;; which files you track.  The format is simple, human readable, and
 ;; integrates well with UNIX command line utilities.
 
-;; Usage:
-;; View your timeline `M-x twtxt-timeline`
-;; Post a status update `M-x twtxt-post`
 
-;;; Code:
-
-;; Autoload
-(defconst twtxt--root-dir (file-name-directory (or load-file-name buffer-file-name)))
-(add-to-list 'load-path twtxt--root-dir)
-(require 'twtxt-variables)
-(require 'twtxt-post)
-(require 'twtxt-feed)
+(add-to-list 'load-path (file-name-directory (or load-file-name buffer-file-name)))
 (require 'twtxt-dm)
-(require 'twtxt-timeline)
-(require 'cl-lib)
+(require 'ert)
 
-(defconst twtxt--max-width 74)
-(defgroup twtxt nil
-  "A twtxt client for Emacs."
-  :group 'twtxt)
+(ert-deftest test-twtxt--dm-twt-p ()
+  )
 
-(define-minor-mode twtxt-mode
-  "Minor mode for enhancing the twtxt experience."
-  :lighter " twtxt"
-  :global nil
-  (if twtxt-mode
-      (progn
-	(setq visual-fill-column-center-text t)
-	(setq visual-fill-column-width twtxt--max-width)
-	(visual-fill-column-mode 1))
-    (visual-fill-column-mode -1)))
+(ert-deftest test-twtxt--dm-get-url ()
+  )
 
-(defun twtxt-open-file ()
-  "Open twtxt file."
-  (interactive)
-  (find-file twtxt-file))
+(ert-deftest test-twtxt--dm-is-for-me-p ()
+  )
 
-(defun twtxt-timeline ()
-  "View your timeline."
-  (interactive)
-  (twtxt--fetch-all-feeds-async)
-  (add-hook 'twtxt-after-fetch-posts-hook (lambda ()
-					    (setq twtxt--timeline-page 1)
-					    (setq twtxt--timeline-thread nil)
-					    (twtxt--timeline-layout)) nil t))
+(ert-deftest test-twtxt--dm-send-p ()
+  )
 
-(defun twtxt-post ()
-  "POST a status update."
-  (interactive)
-  (twtxt--post-buffer))
+(ert-deftest test-twtxt--dm-receive-p ()
+  )
 
-(provide 'twtxt)
-;;; twtxt.el ends here
+(ert-deftest test-twtxt--dm-comunicate-p ()
+  )
+
+(ert-deftest test-twtxt--dm-make-shared-key ()
+  )
+
+(ert-deftest test-twtxt--dm-read ()
+  )
+
+(provide 'twtxt-dm-test)

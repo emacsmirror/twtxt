@@ -4,7 +4,7 @@
 ;; SPDX-License-Identifier: GPL-3.0
 
 ;; Author: Andros - https://andros.dev
-;; Version: 0.2
+;; Version: 1.0
 ;; URL: https://codeberg.org/deadblackclover/twtxt-el
 ;; Package-Requires: ((emacs "25.1") (request "0.2.0") (visual-fill-column "2.4"))
 
@@ -52,8 +52,8 @@
 (defvar twtxt--last-twt-hook nil)
 (defconst twtxt--text-button-reply-twt " ↳ Reply ")
 (defconst twtxt--text-button-thread " ⎆ Thread ")
+(defconst twtxt--text-button-dm " 🔒 DM ")
 (defconst twtxt--char-separator ?-)
-(defconst twtxt--width-separator 74)
 
 ;; Functions
 
@@ -66,7 +66,7 @@
 
 (defun twtxt--string-separator ()
   "Return a string with the separator character."
-  (make-string twtxt--width-separator twtxt--char-separator))
+  (make-string twtxt--max-width twtxt--char-separator))
 
 (defun twtxt--insert-separator ()
   "Insert a horizontal line in the buffer with full width of the window."
@@ -84,6 +84,12 @@
   "Go to the thread of a twtxt. THREAD-ID is the hash of the thread, TWTS-LIST is the list of twts."
   (search-backward-regexp twtxt--char-separator)
   (search-forward-regexp twtxt--text-button-thread)
+  (widget-button-press (point)))
+
+(defun twtxt--goto-dm ()
+  "Go to the direct message of a twtxt."
+  (search-backward-regexp twtxt--char-separator)
+  (search-forward-regexp twtxt--text-button-dm)
   (widget-button-press (point)))
 
 (defun twtxt--regexp-separator ()
@@ -158,20 +164,30 @@
    (twtxt--insert-formatted-text date nil "#FF5733")
    (twtxt--insert-formatted-text prefix)
    (twtxt--insert-formatted-text "\n\n")
+   ;;Button thread
    (unless (equal hash thread)
      (when (or (twtxt--replies-p hash twts-list) thread)
        (widget-create 'push-button
 		      :notify (lambda (&rest ignore)
 				(twtxt--thread-layout thread twts-list))
 		      twtxt--text-button-thread)))
+   ;; Button Reply
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
 		  :notify (lambda (&rest ignore) (twtxt--post-buffer hash))
 		  twtxt--text-button-reply-twt)
+   ;; Button Profile
    (twtxt--insert-formatted-text prefix)
    (widget-create 'push-button
-		  :notify (lambda (&rest ignore) (twtxt---profile-layout author-id))
-		  " Profile ")
+		  :notify (lambda (&rest ignore) (twtxt--profile-layout author-id))
+		  " 🖼 Profile ")
+   ;; Button DM
+   (when (twtxt--dm-comunicate-p author-id)
+     (twtxt--insert-formatted-text prefix)
+     (widget-create 'push-button
+		    :notify (lambda (&rest ignore) (twtxt--post-buffer author-id nil t))
+		    twtxt--text-button-dm)
+     )
    (twtxt--insert-formatted-text "\n")
    ;; End of twt
    (twtxt--insert-separator)))
@@ -181,7 +197,8 @@
   (local-set-key (kbd "n") (lambda () (interactive) (twtxt--goto-next-separator)))
   (local-set-key (kbd "p") (lambda () (interactive) (twtxt--goto-previous-separator)))
   (local-set-key (kbd "t") (lambda () (interactive) (twtxt--goto-thread)))
-  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt))))
+  (local-set-key (kbd "r") (lambda () (interactive) (twtxt--goto-reply-twt)))
+  (local-set-key (kbd "d") (lambda () (interactive) (twtxt--goto-dm))))
 
 
 (provide 'twtxt-ui)

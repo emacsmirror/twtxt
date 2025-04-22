@@ -45,9 +45,11 @@
 (require 'request)
 
 (defconst twtxt--post-name-buffer "*New post | twtxt*")
-(defconst twtxt--post-help-lines 6)
+(defconst twtxt--post-help-lines 8)
 (defvar twtxt-post-tweet-hook nil)
 (defvar twtxt--mentions nil)
+(defvar twtxt--post-hash nil)
+(defvar twtxt--post-dm nil)
 
 (defun twtxt--get-datetime ()
   "Getting date and time according to RFC 3339 standard."
@@ -81,13 +83,22 @@
        (insert "@<" selected-user "> "))))))
 
 
-(defun twtxt--post-buffer (&optional hash)
+(defun twtxt--post-buffer (&optional hash dm)
   "Open a temporary buffer for writing and posting a new status update."
   (setq twtxt--mentions nil)
+  (setq twtxt--post-hash hash)
+  (setq twtxt--post-dm dm)
   (let ((buffer-name twtxt--post-name-buffer))
     (switch-to-buffer (get-buffer-create buffer-name))
     (erase-buffer)
     (twtxt--insert-logo)
+    (twtxt--insert-formatted-text "Type: ")
+    (twtxt--insert-formatted-text
+     (cond
+      (hash (format "Reply to #%s" hash))
+      (dm (format "Direct Messate to %s" dm))
+      (t "New post")))
+    (twtxt--insert-formatted-text "\n\n")
     (twtxt--insert-formatted-text (propertize "C-c C-c" 'face 'bold))
     (twtxt--insert-formatted-text " to post\n")
     (twtxt--insert-formatted-text (propertize "C-c C-m" 'face 'bold))
@@ -95,14 +106,13 @@
     (twtxt--insert-formatted-text (propertize "C-c C-k" 'face 'bold))
     (twtxt--insert-formatted-text " to cancel.")
     (twtxt--insert-separator)
+    ;; Set keymap
     (use-local-map (let ((map (make-sparse-keymap)))
                      (set-keymap-parent map text-mode-map)
                      (define-key map (kbd "C-c C-c") 'twtxt--post-confirm)
 		     (define-key map (kbd "C-c C-m") 'twtxt--insert-mention)
 		     (define-key map (kbd "C-c C-k") 'twtxt--post-cancel)
                      map))
-    (when hash
-      (twtxt--insert-formatted-text (format "(#%s) " hash)))
     (twtxt-mode 1)
     ;; Set the 6 first lines as read-only
     (goto-char (point-max))))
@@ -110,6 +120,19 @@
 (defun twtxt--post-confirm ()
   "Post the content of the buffer as a new status update."
   (interactive)
+  ;; Insert the hash if it exists
+  (when twtxt--post-hash
+    (goto-char (point-min))
+    (forward-line twtxt--post-help-lines)
+    (insert (format "(#%s) " twtxt--post-hash))
+    (setq twtxt--post-hash nil))
+  ;; Insert the DM if it exists
+  (when twtxt--post-dm
+    (goto-char (point-min))
+    (forward-line twtxt--post-help-lines)
+    (insert (format ("!<%s> " twtxt--post-dm)))
+    (setq twtxt--post-dm nil))
+  ;; Get the post content
   (let* ((post-start (save-excursion
                        (goto-char (point-min))
                        (forward-line twtxt--post-help-lines) ;; Jump over help lines.
