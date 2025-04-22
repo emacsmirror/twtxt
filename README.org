@@ -97,11 +97,12 @@ Post a tweet with ~M-x twtxt-post~.
 
 * Optional configuration
 
-Set the twtxts per page:
-
 #+BEGIN_SRC emacs-lisp
-  (setq twtxt--twtxts-per-page 10)
+  (setq twtxt--twtxts-per-page 10) ;; Number of twts per page. Default 10
+  (setq twtxt-max-twts-per-feed 20) ;; Max twts per feed. Default 20. Set `nil` to get all twts.
 #+END_SRC
+
+
 
 * Hooks
 
@@ -214,6 +215,7 @@ If you want to improve speed you will have to:
 
 - Reduce the number of followers.
 - Reduce the number of posts per page.
+- Reduce the number of posts per feed.
 
 I hope you can improve the performance. Enjoy!
 
