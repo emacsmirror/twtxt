@@ -43,7 +43,7 @@
 (require 'twtxt-feed)
 
 (defvar twtxt-dm-private-key-file nil)
-(defconst twtxt--dm-pattern "!<\\(\\w+\\) \\(\\w+\\)> \\(.*\\)"
+(defconst twtxt--dm-pattern "!<\\([^ ]+\\) \\(https?://[^ ]+\\)\\(.*\\)"
   "Pattern to match a DM twt.")
 
 (defun twtxt--dm-twt-p (text)

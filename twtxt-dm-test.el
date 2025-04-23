@@ -45,7 +45,14 @@
 (require 'ert)
 
 (ert-deftest test-twtxt--dm-twt-p ()
-  )
+  (should (twtxt--dm-twt-p "!<foo https://example.com/> test"))
+  (should (twtxt--dm-twt-p "!<foo http://example.com/> test"))
+  (should (twtxt--dm-twt-p "!<foo https://example.com> test"))
+  (should (twtxt--dm-twt-p "!<foo https://example.com/twtxt.txt> test"))
+  (should (not (twtxt--dm-twt-p "!<foo https://example.com/twtxt.txt>")))
+  (should (not (twtxt--dm-twt-p "!<https://example.com/twtxt.txt> test")))
+  (should (not (twtxt--dm-twt-p "!<foo> test")))
+  (should (not (twtxt--dm-twt-p "test !<foo https://example.com/> test"))))
 
 (ert-deftest test-twtxt--dm-get-url ()
   )
