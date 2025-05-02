@@ -50,6 +50,11 @@
   "Return t if the text is a DM."
   (string-match twtxt--dm-pattern text))
 
+(defun twtxt--dm-get-nick (text)
+  "Return the nick from the DM text."
+  (when (twtxt--dm-twt-p text)
+    (match-string 1 text)))
+
 (defun twtxt--dm-get-url (text)
   "Return the URL from the DM text."
   (when (twtxt--dm-twt-p text)

@@ -112,7 +112,7 @@
 		 " 🖼 My profile ")
   (twtxt--insert-formatted-text "\n\n")
   (twtxt--insert-formatted-text "Navigation: (n) Next | (p) Previous | (t) Thread\n")
-  (twtxt--insert-formatted-text "Write: (c) Create | (r) Reply | (d) DM\n")
+  (twtxt--insert-formatted-text "Write: (c) Create | (r) Reply\n")
   (twtxt--insert-formatted-text "Actions: (N) Notifications | (P) My profile | (q) Quit\n")
   (twtxt--insert-separator))
 
