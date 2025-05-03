@@ -182,12 +182,12 @@
 		  :notify (lambda (&rest ignore) (twtxt--profile-layout author-id))
 		  " 🖼 Profile ")
    ;; Button DM
-   (when (twtxt--dm-comunicate-p author-id)
-     (twtxt--insert-formatted-text prefix)
-     (widget-create 'push-button
-		    :notify (lambda (&rest ignore) (twtxt--post-buffer author-id nil t))
-		    twtxt--text-button-dm)
-     )
+   ;; (when (twtxt--dm-comunicate-p author-id)
+   ;;   (twtxt--insert-formatted-text prefix)
+   ;;   (widget-create 'push-button
+   ;; 		    :notify (lambda (&rest ignore) (twtxt--post-buffer author-id nil t))
+   ;; 		    twtxt--text-button-dm)
+   ;;   )
    (twtxt--insert-formatted-text "\n")
    ;; End of twt
    (twtxt--insert-separator)))

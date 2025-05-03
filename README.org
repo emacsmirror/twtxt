@@ -13,7 +13,6 @@ You will not need to use the official terminal client or other complex solutions
 - Read chronologically the publications of those you follow.
 - Notifications of mentions.
 - Read and write in threads.
-- Write secret messages (direct messages).
 - View profiles.
 - Mention, and notify, other users.
 - Transform Markdown syntax to Org.
@@ -49,7 +48,7 @@ You will not need to use the official terminal client or other complex solutions
 | Metadata       | ✅     |
 | Archive Feeds  | ❌     |
 | WebFinger      | ❌     |
-| Direct Message | ✅     |
+| Direct Message | ❌     |
 
 The extensions that it does not support are due to its desktop client nature.
 
@@ -97,11 +96,12 @@ Post a tweet with ~M-x twtxt-post~.
 
 * Optional configuration
 
-Set the twtxts per page:
-
 #+BEGIN_SRC emacs-lisp
-  (setq twtxt--twtxts-per-page 10)
+  (setq twtxt--twtxts-per-page 10) ;; Number of twts per page. Default 10
+  (setq twtxt-max-twts-per-feed 20) ;; Max twts per feed. Default 20. Set `nil` to get all twts.
 #+END_SRC
+
+
 
 * Hooks
 
@@ -162,46 +162,6 @@ Otherwise you will only be able to replicate existing threads, not create them.
 
 You can read more about the ~follower~ specification in the [[https://twtxt.dev/exts/metadata.html#follow][extension]].
 
-* Direct messages
-
-You can send secrets messages to your followers.
-
-If you want to enable this feature you need:
-
-1. Add the ~follower~ to the ~twtxt-file~.
-2. Create public and private keys.
-   #+BEGIN_SRC shell
-     openssl genpkey -algorithm X25519 -out private_key.pem
-     openssl pkey -pubout -in private_key.pem -out public_key.pem
-   #+END_SRC
-3. Transform the public key to base64.
-   #+BEGIN_SRC shell
-     base64 -w 0 < public_key.pem > public_key.b64
-     cat public_key.b64
-   #+END_SRC
-4. Share the public key how metadata field.
-   #+BEGIN_SRC text
-     # Learn more about twtxt:
-     #     https://twtxt.readthedocs.io/en/stable/
-     #
-     # nick = Foo
-     # url = https://example.org/twtxt.txt
-     # avatar = https://example.org/avatar.jpg
-     # description = I'm a hacker
-     # public_key = MCowBQYDK2VuAyEAvBvdsHgzmIiRL9Mjb4fVrbSQGn4Q/m9p7XZCUDj5liI=
-   #+END_SRC
- 5. Set the ~twtxt-dm-private-key-file~ with the path to the private key in your ~init.el~.
-   #+BEGIN_SRC emacs-lisp
-     (setq twtxt-dm-private-key-file "~/path/to/private_key.pem")
-   #+END_SRC
- 6. Run ~M-x twtxt-direct-message~.
-
-You can't send messages to all followers. Only those with a valid public key, like you.
-
-If you lose your keys, the messages in your feed will be unreadable. Keep them safe!
-
-You can read more about the steps in the [[https://twtxt.dev/exts/direct-message.html][direct message extension]].
-
 * Markdown to org
 
 If you have ~pandoc~ installed, ~twtxt.el~ will convert the markdown to org mode.
@@ -214,6 +174,7 @@ If you want to improve speed you will have to:
 
 - Reduce the number of followers.
 - Reduce the number of posts per page.
+- Reduce the number of posts per feed.
 
 I hope you can improve the performance. Enjoy!
 

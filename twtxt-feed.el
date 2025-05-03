@@ -54,6 +54,7 @@
 (defvar twtxt--feeds nil)
 (defvar twtxt-queue nil)
 (defvar twtxt--my-profile nil)
+(defvar twtxt-max-twts-per-feed 20) ;; Maximum number of twts to fetch from the feed
 
 ;; Example of structure with Metadata Extension: https://twtxt.dev/exts/metadata.html
 ;; '((id . 1) ;; The id of the user, unique for each user
@@ -230,8 +231,11 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 	 (feed-without-comments (replace-regexp-in-string "^#.*\n" "" feed))
 	 (feed-without-empty-lines (replace-regexp-in-string "^\n" "" feed-without-comments))
 	 (list-of-lines (split-string feed-without-empty-lines "\n"))
+	 (list-limited (if twtxt-max-twts-per-feed
+			   (seq-take (reverse list-of-lines) twtxt-max-twts-per-feed)
+			 list-of-lines))
 	 (twts nil))
-    (dolist (line list-of-lines)
+    (dolist (line list-limited)
       (let ((columns (split-string line "\t")))
 	(when (length= columns 2)
 	  ;; Make transform: string -> unixtime -> string iso8601 (format-time-string "%FT%TZ" (float-time (date-to-time "2024-12-18T14:54:56+01:00")) t))
@@ -239,7 +243,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 		(date (float-time (date-to-time (car columns))))
 		(raw-text (cadr columns))
 		(text (replace-regexp-in-string twtxt--char-newline "\n" (cadr columns))))
-	    (when (and date text)
+	    (when (and date text) ;;; aqui
 	      (setq twts
 		    (cons (list
 			   (cons 'id (gensym))
@@ -297,7 +301,7 @@ Return nil if it doesn't contain a valid name and URL. For example: My blog http
 
 
 (defun twtxt--check-queue ()
-  ;; Check if the queue is done
+  "Check if the queue is done"
   (let ((in-progress (seq-filter
                       (lambda (i) (or
 				   (eq (cdr (assoc :status i)) :processing)
